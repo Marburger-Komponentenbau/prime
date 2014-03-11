@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">  
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"> 
 <html>
   <head>
     <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
@@ -4206,7 +4206,7 @@
       var running = false;
 
       var newPrivateKey = null;
-      var messageToSend = null;   // TODO wenn encrypt + send ein schritt ist, kann das zurückgebaut werden ...
+      var messageToSend = null;   // TODO wenn encrypt + send ein schritt ist, kann das zur�aut werden ...
       var MessageToSendEncrypted = null;
       //var uiStateReceiveOpen = false;
       //var uiStateReceiveCreate = false;
@@ -4567,12 +4567,16 @@
         msgDiv.className = classN;
         msgDiv.appendChild( document.createTextNode(msg) );
         msgDiv.onclick = handleSelectMsg;
+        contactMsgsNode.appendChild(msgDiv);
+        /*
         if(contactMsgsNode.hasChildNodes()){
           contactMsgsNode.insertBefore( msgDiv, contactMsgsNode.firstChild );
         }
         else{
           contactMsgsNode.appendChild(msgDiv);
         }
+        */
+        window.scrollTo(0, document.body.scrollHeight);
       }
       /** Decrypt Message **/
       function decryptMsg() {
@@ -5193,7 +5197,7 @@
       	var newId = removeWhiteSpace(document.getElementById('Address').value);
       	if(myPrimeID){
 	      	if(newId !== myPrimeID){
-	      		// gibts für die alte ID einen schlüssel?
+	      		// gibts f� alte ID einen schl�
             function downloadKey2FinishedL(keyTarget, req) {
               if(req.readyState==4 && req.status==200){
               	if(req.responseText === 'ERROR???'){
@@ -5560,69 +5564,183 @@
     </script>
     <style type=text/css media=all>
       body {
-        margin: 0pt;
-        padding: 0pt;
+        margin: 0;
+        padding: 0;
         background-color: white;
         font-family: Verdana;
+        display: table;
+        vertical-align:top; 
       }
-      p#project {
-        margin: 0pt;
-        padding-top:3pt;
-        padding-right:6pt;
-        padding-bottom:0pt;
-        padding-left:6pt;
+    
+			#header {    
+        position: fixed;
+        top: 0px; 
+        left: 0px;
+        width: 100%;
+        height: 5.55em;
+        overflow-y: auto; 
+        
+        border-width: 0;
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: 0;         
+        padding-left: 0;        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;        
+			}
+   
+			#main {    
+        border-width: 0;
+        padding-top: 5.55em;   /* project: 1.5/1 + 1.5/1*0.1 + 1.5/1*0.1 = 1.65 */ /* 1. menu: 0.4em + 1em + 0.4em */ /* 2. menu: 0.3em + 0.4em + 1em + 0.4em */
+        padding-right: 0;
+        padding-bottom: 1.8em; /* fuer eine zeile im footer sollte eigentlich 1.6 korrekt sein 1em + 0.3em + 0.3em */       
+        padding-left: 0;        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;            
+			}
+   
+			#footer {  
+						  
+        position: fixed; 
+        bottom: 0px; 
+        width: 100%;
+        height: 1.8em;         /* fuer eine zeile im footer sollte eigentlich 1.6 korrekt sein 1em + 0.3em + 0.3em */
+        overflow-y: auto;
+        
+        border-width: 0;
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        padding-left: 0;        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;         
+      }
+              
+      #project {
+        border-width: 0;
+        margin-top: 0;
+        margin-right: 0.1em;
+        margin-bottom: 0.1em;
+        margin-left: 0.1em;        
+        
+        padding-top: 0;  
+        padding-right: 0;
+        padding-bottom: 0;
+        padding-left: 0;
+        
+        font-size:  1.5em;
+        line-height: 1em;
+
+        font-weight: bold;
+
         text-align: left;
-        background-color: white;
         color: orange;
-        font-size:1.5em;
-        font-weight:bold;
         float: left;
-      }
+      }                  
       p#claim {
-        margin: 0pt;
-        padding-top:3pt;
-        padding-right:6pt;
-        padding-bottom:0pt;
-        padding-left:6pt;
+        border-width: 0;
+        
+        margin-top: 0;
+        margin-right: 0.2em;
+        margin-bottom: 0;
+        margin-left: 0.2em;
+                
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        padding-left: 0;
+        
+        height: 2.2em; /* 1.5/0.75 + 1.5/0.75*0.1 + 1.5/0.75*0.1 */
+        
+        vertical-align: top; 
         text-align: right;
-        background-color: white;
-        font-size:0.75em;
+        /*background-color: white;*/
+        
+        font-size: 0.75em;
+        line-height: 1.4em;
+        
         color: black;
         float: right;
       }
-      p.t {
+      .t {
         clear: both;
-        margin: 0pt;
-        padding: 6pt;
+        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+        
+        padding-top: 0.4em;
+        padding-right: 0.4em;
+        padding-bottom: 0.4em;
+        padding-left: 0.175em;
+
+        font-size:  1em;
+        line-height: 1em;
+
         background-color: orange;
         text-align: left;
         color: white;
+        
+        display: block;
       }
-      p.t A {
-        margin: 0pt;
-        padding: 0pt;
+      
+      a.ml {
+      	background-color: orange;
+        padding: 0;
+        margin-top: 0;
+        margin-right: 0;  
+        margin-bottom: 0;
+        margin-left: 2em;      
         text-decoration: none;
         color: white;
+        float: left;
+        text-align: left;
       }
-      p.t A.s {
-        font-size:0.75em;
+      a.mr {
+        background-color: orange;
+        padding: 0;
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 2em;      
+        text-decoration: none;
+        color: white;
+        float: right;
+        text-align: right;
       }
+            
+      
       p.m { /* menu */
         clear: both;
-        margin: 0pt;
-        padding: 6pt;
+        margin: 0;
+
+        border-top: white 0.3em solid;
+        
+        padding-top: 0.4em;
+        padding-right: 0.4em;
+        padding-bottom: 0.4em;
+        padding-left: 0.175em;        
+        
+        font-size: 1em;
+        line-height: 1em;
+        
         text-align: left;
         background-color: orange;
         color: white;
-        border-top: white 3pt solid;
         DISPLAY: none;
       }
-      p.m A {
-        margin: 0pt;
-        padding: 0pt;
-        text-decoration: none;
-        color: white;
-      }
+
+
+
+
+
 
       form.h, div.h, p.h {
         DISPLAY: none;
@@ -5637,7 +5755,7 @@
         padding-right: 6pt;
         padding-bottom: 6pt;
         padding-left: 6pt;
-        font-weight:bold;
+        font-weight: bold;
       }
 
       span.hint{
@@ -5730,15 +5848,42 @@
       }
       #info {
         text-align: center;
-        border-top: white 3pt solid;
+        border-top: white 0.3em solid;
+        
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        padding-left: 0;        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;          
+        
+        font-size: 1em;
+        line-height: 1em;        
+        
       }
       #info p {
-        margin: 0pt;
-        padding: 6pt;
+
+        padding-top: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        padding-left: 0;        
+        margin-top: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0; 
+
+        font-size: 1em;
+        line-height: 1em;
+
         background-color: white;
-        border-top: orange 6pt solid;
+        border-top: orange 0.3em solid;
         color: black;
       }
+      
+      
+      
       #info iframe {
         margin: 0pt;
         padding: 6pt;
@@ -5785,206 +5930,215 @@
     <input name="action" type="button" value="initUiNodes" onclick="javascript:initUiNodes();">
     <input name="action" type="button" value="menuMainItemKey" onclick="javascript:menuMainItemKey();">
     -->
+	    
+		<div id=header class="header">		
+	    <p id=project>
+	      PRIME
+	    </p>
+	    <p id=claim>
+	      Private Messaging - RSA-Encrypted - End To End
+	    </p>			
+	    
+			<!-- MAIN MENU -->
+			<p class=t >
+				&nbsp;
+	      <a href="#" class=ml onclick="javascript:receiveMsg();" >
+	        Refresh
+	      </a>
+	      <a href="#" class=ml id="menuMainItemContacts" onclick="javascript:contactsToggle();" >
+	        Contacts
+	      </a>
+	      <a href="#" class=ml id="menuMainItemCurrent" onclick="javascript:currentToggle();" >
+	        -
+	      </a>
+	      <a href="#" class=mr id="menuMainItemKey" onclick="javascript:keyToggle();" >
+	        Key
+	      </a>
+	    </p>
+	    
+	    <!-- CONTACTS -->
+	    <p id="menuContacts" class=m >
+	    	&nbsp;
+	      <a href="#" class=ml onclick="javascript:contactsHide()" >
+	        ...
+	      </a>
+	      <a href="#" class=ml id="menuContactsItemOrdertype" class=s onclick="javascript:contactsOrdertypeToggle()" >
+	        A-Z
+	      </a>
+	      <a href="#" class=ml id="menuContactsItemFilternew" class=s >
+	        &nbsp;
+	      </a>
+	      <a href="#" class=mr id="menuContactsItemCreate" class=s onclick="javascript:contactsCreateToggle()" >
+	        Create
+	      </a>
+	    </p>  
+    
+	    <!-- CURRENT -->
+	    <p id="menuCurrent" class=m >
+	    	&nbsp;
+	      <a href="#" class=ml onclick="currentHide()" > <!-- xmenuCurrent xformCurrentEdit xformCurrentMessages xthreads -->
+	        ...
+	      </a>
+	      <a href="#" class=ml id="menuCurrentItemMessages" class=s onclick="currentMessagesToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
+	        Messages
+	      </a>
+	      <a href="#" class=mr id="menuCurrentItemEdit" class=s onclick="currentEditToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
+	        Edit
+	      </a>
+	    </p>  
+        
+	    <!-- KEY -->
+	    <p id="menuKey" class=m >
+	    	&nbsp;
+	      <a href="#" class=ml onclick="keyHide()" >
+	        ...
+	      </a>
+	      <a href="#" class=ml id="menuKeyItemLoad" onclick="keyLoadToggle()" >
+	        Load
+	      </a>
+	      <a href="#" class=ml id="menuKeyItemSetup" onclick="keySetupToggle()" >
+	        Setup
+	      </a>
+	      <a href="#" class=mr id="menuKeyItemSetting" onclick="keySettingToggle()" >
+	        Settings
+	      </a>
+	    </p>
+      
+		</div>
 
-    <p id=project>
-      PRIME
-    </p>
-    <p id=claim>
-      Private Messaging - RSA-Encrypted - End To End
-    </p>
-
-    <p class=t >
-      <a href="#" onclick="javascript:receiveMsg();" >
-        Refresh
-      </a>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="#" id="menuMainItemContacts" onclick="javascript:contactsToggle();" >
-        Contacts
-      </a>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="#" id="menuMainItemCurrent" onclick="javascript:currentToggle();" >
-        -
-      </a>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="#" id="menuMainItemKey" onclick="javascript:keyToggle();" >
-        Key
-      </a>
-    </p>
-
-    <!-- CONTACTS -->
-    <p id="menuContacts" class=m >
-      <a href="#" onclick="javascript:contactsHide()" >
-        ...
-      </a>
-      &nbsp;
-      <a href="#" id="menuContactsItemOrdertype" class=s onclick="javascript:contactsOrdertypeToggle()" >
-        A-Z
-      </a>
-      &nbsp;
-      <a href="#" id="menuContactsItemFilternew" class=s >
-        &nbsp;
-      </a>
-      <a href="#" id="menuContactsItemCreate" class=s onclick="javascript:contactsCreateToggle()" >
-        Create
-      </a>
-    </p>
-
-    <div id="formContactsOrdertype" style="display: none;" >
-      <p id="formContactsOrdertypeAlpha" style="display: none;" ></p>
-      <p id="formContactsOrdertypeManuel" style="display: block;" ></p>
-    </div>
-
-    <div id="formContactsCreate" class=h >
-      Prime-ID:
-      <br>
-      <input id="newcontactID" type="text" size="32" maxlength="16" value="" />
-      <br>
-      <br>
-      displayed name:
-      <br>
-      <input id="newContactNick" type="text" size="32" maxlength="16" value="" />
-      <br>
-      <br>
-      <input type="button" value="get Key" onclick="javascript:downloadKeyNew()" >
-      <br>
-      <pre id="newKey" >&nbsp;</pre>
-      <br>
-      <input type="button" value="save new contact" onclick="javascript:saveNewContact()">
-    </div>
-
-    <!-- CURRENT -->
-    <p id="menuCurrent" class=m >
-      <a href="#" onclick="currentHide()" > <!-- xmenuCurrent xformCurrentEdit xformCurrentMessages xthreads -->
-        ...
-      </a>
-      &nbsp;
-      <a href="#" id="menuCurrentItemMessages" class=s onclick="currentMessagesToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
-        Messages
-      </a>
-      &nbsp;
-      <a href="#" id="menuCurrentItemEdit" class=s onclick="currentEditToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
-        Edit
-      </a>
-    </p>
-
-    <div id="formCurrentMessages" style="display: none;">
-      <textarea id="msg" name="msg" cols="65" rows="3"></textarea>
-      <input id="encryptButton" value="encryptMsg" type="button" onclick="javascript:encryptMsg();" >
-      <input id="sendButton" value="sendMsg" type="button" onclick="javascript:sendMsg();" >
-      <br>
-      <input id="buttonDecrypt" style="display: none;" name="action" type="button" value="DECRYPT" onclick="javascript:decryptMsg();">
-      <input id="buttonDeleteMsg" style="display: none;" name="action" type="button" value="DELETE selected Message" onclick="javascript:deleteMsg();">
-    </div>
-
-    <div id="threads"></div>
-
-    <div id="formCurrentEdit" style="display: none;" >
-      Name:&nbsp;<input name="Nick" id="Nick" type="text" size="32" maxlength="32" value="" onchange="handleNickChanged()" />
-      <br>
-      <input id="downLoadKeyCurrent" name="action" type="button" value="Download Key of current Contact" onclick="javascript:downloadKeyCurrent();">
-      <br>
-      <input id="deleteCurrentThread" name="action" type="button" value="Delete Contact" onclick="javascript:deleteCurrentThread();">
-    </div>
-
-    <!-- KEY -->
-    <p id="menuKey" class=m >
-      <a href="#" onclick="keyHide()" >
-        ...
-      </a>
-      &nbsp;
-      <a href="#" id="menuKeyItemLoad" onclick="keyLoadToggle()" >
-        Load
-      </a>
-      &nbsp;
-      <a href="#" id="menuKeyItemSetup" onclick="keySetupToggle()" >
-        Setup
-      </a>
-      &nbsp;
-      <a href="#" id="menuKeyItemSetting" onclick="keySettingToggle()" >
-        Settings
-      </a>
-    </p>
-
-    <div id="formKeySetup1" class="hstep" >
-      <!-- <p class=step> -->
-        Step 1: Generate Your Pair of Key
-      <!-- </p> -->
-    </div>
-
-    <div id="formKeyLoad0" class=h >
-      If you do not have a key yet, go to <a href="#" onclick="keySetupShow()" >Setup</a>
-    </div>
-
-    <div id="formKeyLoad2" class=h >
-    </div>
-
-    <div id="formKeySetup3" class=h >
-      This can take a long time - depending on your device. <br>
-      Alternative: use a different tool to generate the key (eg, with openssl) <br>
-      then just <a href="#" onclick="keyLoadShow()" >Load</a> it and go to Step 2 (upload) ...
-      <br/>
-      <br/>
-      <input type="radio" id=512 name="bits" value=512 checked=true />
-      512
-      <br/>
-      <input type="radio" id=1024 name="bits" value=1024 />
-      1024
-      <br/>
-      <input type="radio" id=2048 name="bits" value=2048 />
-      2048
-      <!--
-      <br/>
-      <input type="radio" id=4096 name="bits" value=4096 />
-      4096
-       -->
-      <input name="action" value="create your pair of keys" id="create" onclick="javascript:createPrivateKey();" type="button">
-      <br/>
-      <pre id="priKeyPre">&nbsp;</pre>
-      <br/>
-      Keep this private Key carefully! Copy it and save it to a File!
-    </div>
-
-    <div id="formKeySetup2" class="hstep" >
-      <!-- <p class=step> -->
-        Step 2: Upload Your public Key
-      <!-- </p> -->
-    </div>
-
-    <div id="formKeyLoad1" class=h >
-      Your Prime-ID:&nbsp;<input name="Address" id="Address" type="text" size="32" maxlength="32" value="" onchange="javascript:handleAddressChanged()" /> <!---->
-    </div>
-
-    <form id="formKeySetup4" class=h >
-      <!-- msgReceivedLast = -1; -->
-      <!--<input id="a" name="a" value="" />-->
-      <pre id="publicKey" name="k">
-        &nbsp;
-      </pre>
-      <!--<input id="upload" value="Upload" type="submit" > -->
-      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey();">
-    </form>
-
-    <div id="formKeySetting" class=h >
-      <div id="formPers"></div>
-      <input name="action" type="button" value="clearLocalStore" onclick="javascript:clearLocalStore();">
-    </div>
-
-    <!--
-    <p>
-      &nbsp;
-    </p>
-    -->
-
-    <!-- LOG -->
-    <div id="info">
-      <p id="out">-</p>
-      <div class="barOuter">
-        <div id="creatingBar" class="barInner barInnerAni">
-        </div>
+		<div id=main class="main">
+			
+			<!-- CONTACTS -->
+			<div id="formContactsOrdertype" style="display: none;" >
+	      <p id="formContactsOrdertypeAlpha" style="display: none;" ></p>
+	      <p id="formContactsOrdertypeManuel" style="display: block;" ></p>
+	    </div>
+				
+			<div id="formContactsCreate" class=h >
+	      Prime-ID:
+	      <br>
+	      <input id="newcontactID" type="text" size="32" maxlength="16" value="" />
+	      <br>
+	      <br>
+	      displayed name:
+	      <br>
+	      <input id="newContactNick" type="text" size="32" maxlength="16" value="" />
+	      <br>
+	      <br>
+	      <input type="button" value="get Key" onclick="javascript:downloadKeyNew()" >
+	      <br>
+	      <pre id="newKey" >&nbsp;</pre>
+	      <br>
+	      <input type="button" value="save new contact" onclick="javascript:saveNewContact()">
+	    </div>
+				
+			<!-- CURRENT -->
+	    <div id="formCurrentMessages" style="display: none;">
+	      <textarea id="msg" name="msg" cols="65" rows="3"></textarea>
+	      <input id="encryptButton" value="encryptMsg" type="button" onclick="javascript:encryptMsg();" >
+	      <input id="sendButton" value="sendMsg" type="button" onclick="javascript:sendMsg();" >
+	      <br>
+	      <input id="buttonDecrypt" style="display: none;" name="action" type="button" value="DECRYPT" onclick="javascript:decryptMsg();">
+	      <input id="buttonDeleteMsg" style="display: none;" name="action" type="button" value="DELETE selected Message" onclick="javascript:deleteMsg();">
+	    </div>
+			
+			<div id="threads"></div>
+		
+	    <div id="formCurrentEdit" style="display: none;" >
+	      Name:&nbsp;<input name="Nick" id="Nick" type="text" size="32" maxlength="32" value="" onchange="handleNickChanged()" />
+	      <br>
+	      <input id="downLoadKeyCurrent" name="action" type="button" value="Download Key of current Contact" onclick="javascript:downloadKeyCurrent();">
+	      <br>
+	      <input id="deleteCurrentThread" name="action" type="button" value="Delete Contact" onclick="javascript:deleteCurrentThread();">
+	    </div>		
+		
+	    <!-- KEY -->
+	    <div id="formKeySetup1" class="hstep" >
+	      <!-- <p class=step> -->
+	        Step 1: Generate Your Pair of Key
+	      <!-- </p> -->
+	    </div>
+	
+	    <div id="formKeyLoad0" class=h >
+	      If you do not have a key yet, go to <a href="#" onclick="keySetupShow()" >Setup</a>
+	    </div>
+	
+	    <div id="formKeyLoad2" class=h >
+	    </div>
+	
+	    <div id="formKeySetup3" class=h >
+	      This can take a long time - depending on your device. <br>
+	      Alternative: use a different tool to generate the key (eg, with openssl) <br>
+	      then just <a href="#" onclick="keyLoadShow()" >Load</a> it and go to Step 2 (upload) ...
+	      <br/>
+	      <br/>
+	      <input type="radio" id=512 name="bits" value=512 checked=true />
+	      512
+	      <br/>
+	      <input type="radio" id=1024 name="bits" value=1024 />
+	      1024
+	      <br/>
+	      <input type="radio" id=2048 name="bits" value=2048 />
+	      2048
+	      <!--
+	      <br/>
+	      <input type="radio" id=4096 name="bits" value=4096 />
+	      4096
+	       -->
+	      <input name="action" value="create your pair of keys" id="create" onclick="javascript:createPrivateKey();" type="button">
+	      <br/>
+	      <pre id="priKeyPre">&nbsp;</pre>
+	      <br/>
+	      Keep this private Key carefully! Copy it and save it to a File!
+	    </div>
+	
+	    <div id="formKeySetup2" class="hstep" >
+	      <!-- <p class=step> -->
+	        Step 2: Upload Your public Key
+	      <!-- </p> -->
+	    </div>
+	
+	    <div id="formKeyLoad1" class=h >
+	      Your Prime-ID:&nbsp;<input name="Address" id="Address" type="text" size="32" maxlength="32" value="" onchange="javascript:handleAddressChanged()" /> <!---->
+	    </div>
+	
+	    <form id="formKeySetup4" class=h >
+	      <!-- msgReceivedLast = -1; -->
+	      <!--<input id="a" name="a" value="" />-->
+	      <pre id="publicKey" name="k">
+	        &nbsp;
+	      </pre>
+	      <!--<input id="upload" value="Upload" type="submit" > -->
+	      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey();">
+	    </form>
+	
+	    <div id="formKeySetting" class=h >
+	      <div id="formPers"></div>
+	      <input name="action" type="button" value="clearLocalStore" onclick="javascript:clearLocalStore();">
+	    </div>
+		
+		</div>
+		
+		
+		<!-- TODO nur bei Bedarf einblenden ... -->
+    <div class="barOuter">
+      <div id="creatingBar" class="barInner barInnerAni">
       </div>
-      <p id="log">
-      </p>
     </div>
+    
+    <!-- TODO nur bei Bedarf einblenden ... -->
+    <p id="log" style="display: none;">
+    </p>
+		
+		<div id=footer class="footer">
+	    
+	    <!-- LOG -->
+	    <div id="info">
+	      <p id="out">test </p>
+
+	    </div>
+	    
+		</div>
 
   </body>
 
