@@ -17,6 +17,8 @@
 
       var newPrivateKey = null;
       
+      var noKeyStr = "-- NO KEY LOADED --";
+      
       //var uiStateReceiveOpen = false;
       //var uiStateReceiveCreate = false;
       //var opendPrivateKey = null;
@@ -45,7 +47,7 @@
         if(!el.firstChild.data){
 		      return false;
     		}      
-        if(el.firstChild.data === "-"){
+        if(el.firstChild.data === noKeyStr){
 		      return false;
     		}
 				return true;        		        		  	
@@ -90,8 +92,8 @@
                 outLock(null);
               }
             }
-            req.open("GET", 'http://conetex.com/cgi-bin/primeDownloadPubKey.py?a='+contactID+'&x='+Math.random(), false);
             if( outLock("downloading Key ...") ){
+              req.open("GET", 'http://conetex.com/cgi-bin/primeDownloadPubKey.py?a='+contactID+'&x='+Math.random(), false);
               req.send(null);
             }
             else{
@@ -194,6 +196,7 @@
                   if(req.readyState==4  && req.status==200){
                     if(messageToSend){
                       createMsgTag(currentThread.lastChild, messageToSend, "messageMy");        // MSG
+                      document.getElementById('menuCurrentItemDeleteAll').className = "i il ena";
                     }
                     document.getElementById('msg').value = "";
                     messageToSend = null;
@@ -383,7 +386,7 @@
                   var m = document.getElementById('msg').value;
                   req.open("GET", 'http://conetex.com/cgi-bin/primeDownloadMsg.py?a=' + fromAddress + '&x=' + Math.random(), true);
                   req.onreadystatechange = function () {
-                      if(req.readyState==4  && req.status==200){
+                      if(req.readyState==4 && req.status==200){
                           var msgChunks = req.responseText.split("|");
                           for(var i = 2; i < msgChunks.length; i = i + 3){
                             var newMsgID = parseInt( msgChunks[i-2] );                          // ID
@@ -392,7 +395,7 @@
                               msgReceivedLast = newMsgID;
                               var contactMsgs = document.getElementById("u" + msgChunks[i-1]);  // FROM
                               if(! contactMsgs){
-                                var contactKey = "";
+                                var contactKey = noKeyStr;
                                 saveNewContactParam(msgChunks[i-1], contactKey, msgChunks[i-1]);
                                 contactMsgs = document.getElementById("u" + msgChunks[i-1]);
                               }
@@ -546,6 +549,8 @@
         	} 
         	if(myPrimeID){
         		document.getElementById('Address').value = myPrimeID;
+		      	document.getElementById('menuMainItemKey').firstChild.data = myPrimeID;            
+        		
         		var msgReceivedLastStr = localStorage.getItem("msgReceivedLast" + myPrimeID);
 	          if(msgReceivedLastStr){
 	            msgReceivedLast = parseInt( msgReceivedLastStr );
@@ -775,7 +780,7 @@
         return [contactDiv, a, aA];
       }
       function deleteCurrentThread() {
-          document.getElementById('menuMainItemCurrent').firstChild.data = "";
+          document.getElementById('menuCurrentItemEdit').firstChild.data = "-";
           currentHide();
           var p = currentThread.parentNode;
           p.removeChild( currentThread );
@@ -785,7 +790,7 @@
           p.removeChild( contactManuelSelected );
       }
       function handleNickChanged() {
-        document.getElementById('menuMainItemCurrent').firstChild.data = document.getElementById('Nick').value;
+        document.getElementById('menuCurrentItemEdit').firstChild.data = document.getElementById('Nick').value;
         if(contactAlphaSelected){
           contactAlphaSelected.firstChild.data = document.getElementById('Nick').value;
           var p = contactAlphaSelected.parentNode;
@@ -860,25 +865,28 @@
         }
       }
       /** Manage Messages **/
-      function deleteMsg() {
+      function deleteMsg(){
         if(msgSelectedDiv){
           msgSelectedDiv.parentElement.removeChild(msgSelectedDiv);
           msgSelectedDiv = null;
           document.getElementById('buttonDecrypt').style.display='none';
           document.getElementById('menuCurrentItemDelete').className = 'i il dis';
+        	if(! currentThread.lastChild.firstChild){
+						document.getElementById('menuCurrentItemDeleteAll').className = "i il dis";
+					}          
         }
       }
-      function deleteMsgAll() {
-        // TODO implementieren!
-        if(msgSelectedDiv){
-          msgSelectedDiv.parentElement.removeChild(msgSelectedDiv);
-          msgSelectedDiv = null;
-          document.getElementById('buttonDecrypt').style.display='none';
-          document.getElementById('menuCurrentItemDelete').className = 'i il dis';
+      function deleteMsgAll(){
+        if(currentThread){
+        	var msgNode = currentThread.lastChild;
+        	while (msgNode.firstChild) {
+    				msgNode.removeChild(msgNode.firstChild);
+					}
+					document.getElementById('menuCurrentItemDeleteAll').className = "i il dis";
         }
       }      
       /** Tools **/
-      function outInfo(str) {
+      function outInfo(str){
         document.getElementById('log').appendChild( document.createTextNode(str) );
         document.getElementById('log').appendChild( document.createElement('br') );
       }
@@ -909,8 +917,11 @@
       /** UI Setup **/
       function init(){
         initUiNodes();
+        initData();
+      }
+      function initData(){
         loadPriKey();
-        if(document.getElementById('key').value && document.getElementById('Address').value){
+        if(document.getElementById('key').value && document.getElementById('Address').value){ // TODO was soll das mit Address ?
           if( ! loadThreads(true) ){
             contactsShow();
           }
@@ -919,7 +930,7 @@
           loadThreads(false);
           keyShow();
         }
-      }
+      }      
       function initUiNodes(){
         //document.getElementById('Address').value = "";
         var localStorePriKey = document.getElementById('localStorePriKey');
@@ -1055,23 +1066,26 @@
       	var newId = removeWhiteSpace(document.getElementById('Address').value);
       	if(myPrimeID){
 	      	if(newId !== myPrimeID){
-	      		// gibts f? alte ID einen schl?
-            function downloadKey2FinishedL(keyTarget, req) {
+	      		// is there a key for the old ID?
+            function callback(keyTarget, req) {
               if(req.readyState==4 && req.status==200){
-              	if(req.responseText === 'ERROR???'){
-              		// TODO sehr gut! noch nix passiert!
+              	if(req.responseText === 'ERROR???'){// TODO definiere ein Protokoll auf server-seite!
               		myPrimeID = newId;
               	}
               	else{
-              		// TODO reload alles!
+              		saveThreadsPriKey();
+              		myPrimeID = newId;
+              		initData();
               	}
               }
             };	
-            downloadKey2(myPrimeID, null, downloadKey2FinishedL);
+            downloadKey2(myPrimeID, null, callback);// TODO schoenere funktion ...
+		      	document.getElementById('menuMainItemKey').firstChild.data = myPrimeID;            
 	      	}      		
       	}
       	else{
       		myPrimeID = newId;
+	      	document.getElementById('menuMainItemKey').firstChild.data = myPrimeID;
       	}
       }
       function handleKeyChanged(){
@@ -1109,7 +1123,7 @@
           }
           var idStr = ea.id;
           idStr = idStr.substring(1, idStr.length);
-          nameStr = ea.firstChild.data;
+          var nameStr = ea.firstChild.data;
           document.getElementById('Nick').value = nameStr;
           var el = document.getElementById( 'x' + idStr );
           threadLinkAlpha = document.getElementById( 'w' + idStr );
@@ -1119,7 +1133,7 @@
       }
       function handleSelectThreadE(el, threadLinkAlpha, threadLinkManuel, idStr, nameStr){
         if(!currentThread){
-          document.getElementById('menuMainItemCurrent').firstChild.data = nameStr;
+          document.getElementById('menuCurrentItemEdit').firstChild.data = nameStr;
           //document.getElementById('menuMainItemCurrent').style.fontWeight='bold';
           //document.getElementById('formCurrentEdit').style.display='block';
           currentThread = el;
@@ -1154,7 +1168,7 @@
           document.getElementById('menuMainItemCurrent').style.fontWeight='bold';
           */
           //contactsOrdertypeHide();
-          document.getElementById('menuMainItemCurrent').firstChild.data = nameStr;
+          document.getElementById('menuCurrentItemEdit').firstChild.data = nameStr;// TODO hier oder in if oben? was ist el?
           currentShow();
         }
       }
@@ -1355,14 +1369,14 @@
         }
       }
       function currentShow() {
-        document.getElementById('menuMainItemCurrent').style.fontWeight='bold';
+        //document.getElementById('menuMainItemCurrent').style.fontWeight='bold';
         document.getElementById('menuCurrent').style.display='block';
         contactsHide();
         keyHide();
         currentMessagesShow();
       }
       function currentHide() {
-        document.getElementById('menuMainItemCurrent').style.fontWeight='normal';
+        //document.getElementById('menuMainItemCurrent').style.fontWeight='normal';
         document.getElementById('menuCurrent').style.display='none';
         currentMessagesHide();
         currentEditHide();
@@ -1385,6 +1399,12 @@
           var ms = currentThread.lastChild;
           currentThread.lastChild.style.display='block';
           currentEditHide();
+        	if (currentThread.lastChild.firstChild) {
+    				document.getElementById('menuCurrentItemDeleteAll').className = "i il ena";
+					}
+					else{
+						document.getElementById('menuCurrentItemDeleteAll').className = "i il dis";
+					}
         }
       }
       function currentMessagesHide() {
@@ -1409,16 +1429,33 @@
       	var heightHeader = document.getElementById('header').offsetHeight;
       	var HeightForm = document.getElementById('formCurrentNew').offsetHeight;
       	document.getElementById('main').style.paddingTop = (heightHeader + HeightForm).toString() + "px";
-      	//window.scrollTo(0, document.body.scrollHeight);
-      	downloadKeyCurrentIfNull();
+        document.getElementById("msg").focus();
+      	window.scrollTo(0, document.body.scrollHeight);
       }
       function currentNewHide() {
 				document.getElementById('formCurrentNew').style.display='none';
 				document.getElementById('menuCurrentItemNew').style.fontWeight='normal';
 				document.getElementById('main').style.paddingTop = "5.55em";// TODO lieber am Anfang orginal auslesen ...
-				//window.scrollTo(0, document.body.scrollHeight);
+				window.scrollTo(0, document.body.scrollHeight);
       } 
-
+      /*
+			function setCursorAtTheEnd(aTextArea,aEvent) {
+				  //aTextArea.value+='x';
+			    var end=aTextArea.value.length;
+			    if (aTextArea.setSelectionRange) {
+			        setTimeout(aTextArea.setSelectionRange,0,[end,end]);  
+			    } else { // IE style
+			        var aRange = aTextArea.createTextRange();
+			        aRange.collapse(true);
+			        aRange.moveEnd('character', end);
+			        aRange.moveStart('character', end);
+			        aRange.select();    
+			    }
+			    aEvent.preventDefault();
+			    return false;
+			} 
+      */
+      
       function currentEditToggle() {
         if(document.getElementById('formCurrentEdit').style.display=='block'){
           currentEditHide();

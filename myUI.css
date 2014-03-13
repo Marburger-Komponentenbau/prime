@@ -114,7 +114,7 @@
       
       .ena { /* enabled */
         color: white;       
-        /*cursor: pointer;    */  
+        cursor: pointer;   
       }
       .dis { /* disabled */
         color: #FFE2B4;   

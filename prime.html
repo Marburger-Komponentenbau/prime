@@ -4221,18 +4221,20 @@
 	    
 			<!-- MENU MAIN -->
 			<p class="m mm" >
-				&nbsp;
+        &nbsp;
 	      <a href="#" class="i il ena" onclick="javascript:receiveMsg();" >
 	        Refresh
 	      </a>
 	      <a href="#" class="i il ena" id="menuMainItemContacts" onclick="javascript:contactsToggle();" >
 	        Contacts
 	      </a>
+	      <!--
 	      <a href="#end" class="i il ena" id="menuMainItemCurrent" onclick="javascript:currentToggle();" >
 	        -
 	      </a>
+	      -->
 	      <a href="#" class="i ir ena" id="menuMainItemKey" onclick="javascript:keyToggle();" >
-	        Key
+	        Initialize
 	      </a>
 	    </p>
 	    
@@ -4242,13 +4244,13 @@
 	      <a href="#" class="i il ena" onclick="javascript:contactsHide()" >
 	        ...
 	      </a>
-	      <a href="#" class="i il ena" id="menuContactsItemOrdertype" class=s onclick="javascript:contactsOrdertypeToggle()" >
+	      <a href="#" class="i il ena" id="menuContactsItemOrdertype" onclick="javascript:contactsOrdertypeToggle()" >
 	        A-Z
 	      </a>
-	      <a href="#" class="i il ena" id="menuContactsItemFilternew" class=s >
+	      <a href="#" class="i il ena" id="menuContactsItemFilternew" >
 	        &nbsp;
 	      </a>
-	      <a href="#" class="i ir ena" id="menuContactsItemCreate" class=s onclick="javascript:contactsCreateToggle()" >
+	      <a href="#" class="i ir ena" id="menuContactsItemCreate" onclick="javascript:contactsCreateToggle()" >
 	        Create
 	      </a>
 	    </p>  
@@ -4259,20 +4261,25 @@
 	      <a href="#" class="i il ena" onclick="currentHide()" > <!-- xmenuCurrent xformCurrentEdit xformCurrentMessages xthreads -->
 	        ...
 	      </a>
-	      <!--<a href="#" class="i il ena" id="menuCurrentItemMessages" class=s onclick="currentMessagesToggle()" > 
+	      <!--
+        <a href="#" class="i il ena" id="menuCurrentItemMessages" onclick="currentMessagesToggle()" > 
 	        Messages
-	      </a>-->
-	      <a href="#end" class="i il ena" id="menuCurrentItemNew" class=s onclick="currentNewToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
-	        New
 	      </a>
-	      <a href="#end" class="i il ena" id="menuCurrentItemDelete" class=s onclick="javascript:deleteMsg();" > <!-- formCurrentEdit formCurrentMessages threads -->
+        -->
+        <!-- HINT: do not go to href="#end" here. focus would not work. 
+                   do not use href="#". javascript scroll-down would not work.
+        -->    
+	      <span class="i il ena" id="menuCurrentItemNew" onclick="javascript:currentNewToggle();" > <!-- javascript:activateMsg(); -->
+	        New
+	      </span>
+	      <a href="#end" class="i il dis" id="menuCurrentItemDelete" onclick="javascript:deleteMsg();" > <!-- formCurrentEdit formCurrentMessages threads -->
 	        Delete
 	      </a>   
-	      <a href="#end" class="i il ena" id="menuCurrentItemDeleteAll" class=s onclick="javascript:deleteMsgAll();" > <!-- formCurrentEdit formCurrentMessages threads -->
+	      <a href="#end" class="i il ena" id="menuCurrentItemDeleteAll" onclick="javascript:deleteMsgAll();" > <!-- formCurrentEdit formCurrentMessages threads -->
 	        Delete All
 	      </a>              	      
-	      <a href="#end" class="i ir ena" id="menuCurrentItemEdit" class=s onclick="currentEditToggle()" > <!-- formCurrentEdit formCurrentMessages threads -->
-	        Edit
+	      <a href="#end" class="i ir ena" id="menuCurrentItemEdit" onclick="currentEditToggle()" >
+	        -
 	      </a>
 	    </p>  
       <!--
@@ -4325,7 +4332,7 @@
 				
 			<!-- CURRENT -->
 	    <div id="formCurrentNew" >
-	      <textarea id="msg" name="msg" cols="65" rows="3"></textarea>
+	      <textarea id="msg" name="msg" cols="65" rows="3" onfocus="setCursorAtTheEnd(this,event)"></textarea>
 	      <!--<input id="encryptButton" value="encryptMsg" type="button" onclick="javascript:encryptAndSendMsg();" >-->
 	      
 	      <a href="#end" class="b" onclick="javascript:encryptAndSendMsg();" >
