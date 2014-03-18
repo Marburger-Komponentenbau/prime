@@ -4334,11 +4334,14 @@
 	    <div id="formCurrentNew" >
 	      <textarea id="msg" name="msg" cols="65" rows="3" onfocus="setCursorAtTheEnd(this,event)"></textarea>
 	      <!--<input id="encryptButton" value="encryptMsg" type="button" onclick="javascript:encryptAndSendMsg();" >-->
-	      
-	      <a href="#end" class="b" onclick="javascript:encryptAndSendMsg();" >
+	      <span class="b" onclick="javascript:encryptAndSendMsg();" >
 	        Send
-	      </a>	      
-	      
+	      </span>	 
+        <!--     
+	      <a href="#end" class="b" onclick="javascript:encryptAndSendMsg();" >
+	        Send O
+	      </a>	
+        -->      
 	      <!--<input id="sendButton" value="sendMsg" type="button" onclick="javascript:sendMsg();" >-->
 	      <a href="#end" class="b" onclick="javascript:currentNewHide();" >
 	        Abort
@@ -4414,7 +4417,7 @@
 	        &nbsp;
 	      </pre>
 	      <!--<input id="upload" value="Upload" type="submit" > -->
-	      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey();">
+	      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey1();">
 	    </form>
 	
 	    <div id="formKeySetting" class=h >

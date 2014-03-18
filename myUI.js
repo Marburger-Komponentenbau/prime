@@ -25,8 +25,27 @@
       //var opendPubKey = null;
       /** Get Public Keys **/
       
+      // Return the PKCS#1 RSA decryption of "ctext".
+      // "ctext" is an even-length hex string and the output is a plain string.
+      function RSAVerify(ctext) {
+        var x = parseBigInt(ctext, 16);
+        var m = x.modPowInt(this.e, this.n);
+        if(m == null) return null;
+        return pkcs1unpad2(m, (this.n.bitLength()+7)>>3);
+      }
+      RSAKey.prototype.verify = RSAVerify;
       
-      
+      // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
+      function RSASign(text) {
+        var m = pkcs1pad2(text,(this.n.bitLength()+7)>>3);
+        if(m == null) return null;
+        var c = m.modPow(this.d, this.n);
+        if(c == null) return null;
+        var h = c.toString(16);
+        if((h.length & 1) == 0) return h; else return "0" + h;
+      }
+      RSAKey.prototype.sign = RSASign;
+    
       function getCurrentIdStr(){
         if(currentThread){
           var idStr = currentThread.id;
@@ -176,6 +195,8 @@
             outInfo("Fatal Error - encryptMsg: There is still a running Process...");
           }
         }
+        document.getElementById("msg").focus();
+      	window.scrollTo(0, document.body.scrollHeight);        
       }
       /** Send Message **/
       function sendMsg(MessageToSendEncrypted, messageToSend){
@@ -231,6 +252,21 @@
       function createPrivateKeyFinished(){
         // TODO warteanzeigen aus
         outLock(null);
+        
+        var oldPriKey = null;
+        var oldPriKeyText = document.getElementById('key').value;
+        if(oldPriKeyText){
+          
+          oldPriKey = new RSAKey();
+          if(! oldPriKey.parseKey(oldPriKeyText)){
+            outInfo("Error - createPrivateKeyFinished: can not parse old private Key!");
+            oldPriKey = null;
+          }
+          
+        }
+        
+        uploadPubKey(oldPriKey, newPrivateKey);
+          
         document.getElementById('key').value = newPrivateKey.getPrivateKey();
         document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
         document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
@@ -250,9 +286,11 @@
           /*else if (document.getElementById('4096').checked) {
             bits = 4096;
           }*/
+          /*
           document.getElementById('key').value = "";
           document.getElementById('priKeyPre').firstChild.data = " ";
           document.getElementById('publicKey').firstChild.data = " ";
+          */
           if( outLock("generating Key ...") ){
             newPrivateKey.generateAsync(bits, '010001', createPrivateKeyFinished); //65537 default openssl public exponent for rsa key type
           }
@@ -345,9 +383,27 @@
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
       }
-      function uploadPubKey(){
-        var publicKey = document.getElementById('publicKey').firstChild.data;
-        if (! publicKey){
+      function uploadPubKey1(  ){
+      
+        var privateKey = new RSAKey();
+        if(! privateKey.parseKey(document.getElementById('key').value) ) {
+          return;
+        }
+        
+        var publicKey = new RSAKey();
+        if(! publicKey.parseKey(document.getElementById('publicKey').firstChild.data) ) {
+          return;
+        } 
+        
+        
+        uploadPubKey( privateKey, privateKey );
+      }
+      function uploadPubKey( oldPriKey, newPriKey ){
+      
+        //document.getElementById('key').value = newPrivateKey.getPrivateKey();
+      
+        var publicKeyStr = newPriKey.getPublicKey();
+        if (! publicKeyStr){
           outInfo("Error - uploadPubKey: No public Key to upload!");
           return;
         }
@@ -361,8 +417,28 @@
           outInfo("Error - uploadPubKey: Your browser does not support XMLHTTP.");
           return;
         }
-        publicKey = publicKey.replace(/\+/gi,"_");
-        req.open("GET", 'http://conetex.com/cgi-bin/primeUploadPubKey.py?a=' + fromAddress + '&k=' + publicKey + '&x=' + Math.random(), true);
+        
+        var oldPubKey = new RSAKey();
+        if(! oldPubKey.parseKey(oldPriKey.getPublicKey()) ) {
+          return;
+        }
+        var sigMsg = ( Math.random() ).toString();
+        var signature = oldPriKey.sign(sigMsg);
+        var reSig = oldPubKey.verify(signature);
+                
+        var nStr = oldPubKey.n.toString();
+        
+        publicKeyStr = publicKeyStr.replace(/\+/gi,"_");
+        publicKeyStr = publicKeyStr.replace(/-----BEGIN PUBLIC KEY-----/gi,"");
+        publicKeyStr = publicKeyStr.replace(/-----END PUBLIC KEY-----/gi,"");
+                
+        /*
+        if(oldPriKey){
+           oldPriKey.
+        }
+        */
+        var qryStr = 'http://conetex.com/cgi-bin/primeUploadPubKey.py?a=' + fromAddress + '&k=' + publicKeyStr + '&s=' + signature + '&m=' + sigMsg;
+        req.open("GET", qryStr, true);
         req.onreadystatechange = function () {
           if(req.readyState==4  && req.status==200){
             outLock(null);
@@ -381,34 +457,34 @@
         // TODO warteanzeigen aus
         var fromAddress = document.getElementById('Address').value;
         if (fromAddress && fromAddress!=''){
-              var req = getReq();
-              if (req){
-                  var m = document.getElementById('msg').value;
-                  req.open("GET", 'http://conetex.com/cgi-bin/primeDownloadMsg.py?a=' + fromAddress + '&x=' + Math.random(), true);
-                  req.onreadystatechange = function () {
-                      if(req.readyState==4 && req.status==200){
-                          var msgChunks = req.responseText.split("|");
-                          for(var i = 2; i < msgChunks.length; i = i + 3){
-                            var newMsgID = parseInt( msgChunks[i-2] );                          // ID
-                            var l = msgReceivedLast;//TODO Rueckbau nur fuer debug...
-                            if(newMsgID > msgReceivedLast){
-                              msgReceivedLast = newMsgID;
-                              var contactMsgs = document.getElementById("u" + msgChunks[i-1]);  // FROM
-                              if(! contactMsgs){
-                                var contactKey = noKeyStr;
-                                saveNewContactParam(msgChunks[i-1], contactKey, msgChunks[i-1]);
-                                contactMsgs = document.getElementById("u" + msgChunks[i-1]);
-                              }
-                              createMsgTag(contactMsgs, msgChunks[i], "messageCrypted");        // MSG
-                            }
-                          }
-                      }
+          var req = getReq();
+          if (req){
+            var m = document.getElementById('msg').value;
+            req.open("GET", 'http://conetex.com/cgi-bin/primeDownloadMsg.py?a=' + fromAddress + '&x=' + Math.random(), true);
+            req.onreadystatechange = function () {
+              if(req.readyState==4 && req.status==200){
+                var msgChunks = req.responseText.split("|");
+                for(var i = 2; i < msgChunks.length; i = i + 3){
+                  var newMsgID = parseInt( msgChunks[i-2] );                          // ID
+                  var l = msgReceivedLast;//TODO Rueckbau nur fuer debug...
+                  if(newMsgID > msgReceivedLast){
+                    msgReceivedLast = newMsgID;
+                    var contactMsgs = document.getElementById("u" + msgChunks[i-1]);  // FROM
+                    if(! contactMsgs){
+                      var contactKey = noKeyStr;
+                      saveNewContactParam(msgChunks[i-1], contactKey, msgChunks[i-1]);
+                      contactMsgs = document.getElementById("u" + msgChunks[i-1]);
+                    }
+                    createMsgTag(contactMsgs, msgChunks[i], "messageCrypted");        // MSG
                   }
-                  req.send(null);
+                }
               }
-              else{
-                  outInfo("Error - receiveMsg: Your browser does not support XMLHTTP.");
-              }
+            }
+            req.send(null);
+          }
+          else{
+            outInfo("Error - receiveMsg: Your browser does not support XMLHTTP.");
+          }
         }
         else{
            outInfo("Error - receiveMsg: No Sender-Address! Please setup your Prime-ID!");
@@ -433,7 +509,7 @@
       /** Decrypt Message **/
       function decryptMsg() {
         if(msgSelectedDiv){
-          if(msgSelectedDiv.className === "messageCrypted"){
+          if(msgSelectedDiv.className === "messageCrypted sel" || msgSelectedDiv.className === "messageCrypted"){
             var opendPrivateKey = new RSAKey();
             if( document.getElementById('key') && opendPrivateKey.parseKey( document.getElementById('key').value) ) {
               var prkPrinted = opendPrivateKey.getPrivateKey();
@@ -447,7 +523,7 @@
                   }
                   else{
                     msgSelectedDiv.firstChild.data = decrypted;
-                    msgSelectedDiv.className = "message";
+                    msgSelectedDiv.className = "message sel";
                   }
                   document.getElementById('buttonDecrypt').style.display='none';
                 }
@@ -598,6 +674,10 @@
         if (document.getElementById('localStoreMessages')) {
           if (document.getElementById('localStoreMessages').checked) {
           	localStorage.setItem("localStoreMessages" + myPrimeID, 'Y');
+            if(msgSelectedDiv){
+              msgSelectedDiv.className = msgSelectedDiv.className.substring(0, msgSelectedDiv.className.length-4); 
+              msgSelectedDiv = null;            
+            }
           	localStorage.setItem("threads" + myPrimeID, document.getElementById("threads").innerHTML);
           	localStorage.setItem("threadsAlpha" + myPrimeID, document.getElementById("formContactsOrdertypeAlpha").innerHTML);
           	localStorage.setItem("threadsManuel" + myPrimeID, document.getElementById("formContactsOrdertypeManuel").innerHTML);
@@ -1096,7 +1176,8 @@
         var ea = e.target;
         if(ea){
           if(msgSelectedDiv){
-            msgSelectedDiv.style.fontWeight='normal';
+            //msgSelectedDiv.style.fontWeight='normal';
+            msgSelectedDiv.className = msgSelectedDiv.className.substring(0, msgSelectedDiv.className.length-4); 
             if(msgSelectedDiv === ea){
               msgSelectedDiv = null;
               document.getElementById('buttonDecrypt').style.display='none';
@@ -1105,9 +1186,13 @@
             }
           }
           msgSelectedDiv = ea;
-          msgSelectedDiv.style.fontWeight='bold';
+          //msgSelectedDiv.style.fontWeight='bold';
           if(msgSelectedDiv.className === "messageCrypted"){
+            msgSelectedDiv.className = "messageCrypted sel";
             document.getElementById('buttonDecrypt').style.display='block';
+          }
+          else{
+            msgSelectedDiv.className = msgSelectedDiv.className + " sel";
           }
           document.getElementById('menuCurrentItemDelete').className = 'i il ena';
         }
@@ -1116,7 +1201,8 @@
         var ea = e.target;
         if(ea){
           if(msgSelectedDiv){
-            msgSelectedDiv.style.fontWeight='normal';
+            //msgSelectedDiv.style.fontWeight='normal';
+            msgSelectedDiv.className = msgSelectedDiv.className.substring(0, msgSelectedDiv.className.length-4);
             msgSelectedDiv = null;
             document.getElementById('buttonDecrypt').style.display='none';
             document.getElementById('menuCurrentItemDelete').className = 'i il dis';

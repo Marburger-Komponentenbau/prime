@@ -143,10 +143,12 @@
       }
 			#msg {
 				float: left; 
+        margin-left: 0.4em; 
 			}
 
       .b { /* button */
       	background-color: orange;
+        cursor: pointer;
         
         padding-top: 0.4em;
         padding-right: 1em;  
@@ -163,6 +165,28 @@
         
         text-align: left;
         float: left;         
+      }
+
+      div.messageMy {
+        padding: 0.3em;
+        color: grey;
+        margin-left: 1.5em;
+        cursor: default;/*auto; */
+      }
+      div.messageCrypted {
+        padding: 0.3em;
+        color: red;
+      }
+      div.message {
+        padding: 0.3em;
+        margin: 0.3em;
+        color: black;
+        /*background-color: #FFE2B4; */
+        /*border-bottom: orange 0.1em solid; */
+        cursor: default;/*auto; */
+      }
+      .sel {
+        background-color: #FFE2B4;
       }
 
       form.h, div.h, p.h {
@@ -200,18 +224,7 @@
         cursor: move;
       }
 
-      div.messageMy {
-        padding: 3pt;
-        color: green;
-      }
-      div.messageCrypted {
-        padding: 3pt;
-        color: red;
-      }
-      div.message {
-        padding: 3pt;
-        color: blue;
-      }
+
 
       #drop_zone {
         border: 2px dashed #bbb;
