@@ -111,7 +111,19 @@
         text-decoration: none;
         float: right;        
       }
-      
+               
+      .ready {
+        cursor: default;
+      }
+      .working {
+        cursor: progress;
+      }
+      .working .ena { /* enabled */
+        cursor: progress;   
+      }
+      .working .dis { /* disabled */
+        cursor: progress;/*auto; */
+      }                
       .ena { /* enabled */
         color: white;       
         cursor: pointer;   
@@ -119,8 +131,7 @@
       .dis { /* disabled */
         color: #FFE2B4;   
         cursor: default;/*auto; */
-      }                
-          
+      }           
             
       #formCurrentNew {
       	border-top: white 0.3em solid;
@@ -145,10 +156,9 @@
 				float: left; 
         margin-left: 0.4em; 
 			}
-
+        
       .b { /* button */
       	background-color: orange;
-        cursor: pointer;
         
         padding-top: 0.4em;
         padding-right: 1em;  
@@ -161,7 +171,6 @@
         margin-left: 1em;      
 
         text-decoration: none;
-        color: white;
         
         text-align: left;
         float: left;         

@@ -2992,7 +2992,12 @@
                       rsa.coeff = rsa.q.modInverse(rsa.p);
                       setTimeout(function(){callback()},0); // escape
                   } else {
+                  	if(state_key === STATE_KEY_CREATE){
                       setTimeout(loop1,0);
+                    }
+                    else{
+                      setTimeout(function(){callback()},0); // escape
+                    }
                   }
               };
               var loop3 = function() {
@@ -3000,9 +3005,19 @@
                   rsa.q.fromNumberAsync(qs, 1, rng, function(){
                       rsa.q.subtract(BigInteger.ONE).gcda(ee, function(r){
                           if (r.compareTo(BigInteger.ONE) == 0 && rsa.q.isProbablePrime(10)) {
+				                  	if(state_key === STATE_KEY_CREATE){
                               setTimeout(loop4,0);
+                            }
+				                    else{
+				                      setTimeout(function(){callback()},0); // escape
+				                    }                            
                           } else {
+	     	                  	if(state_key === STATE_KEY_CREATE){
                               setTimeout(loop3,0);
+                            }
+				                    else{
+				                      setTimeout(function(){callback()},0); // escape
+				                    }                            
                           }
                       });
                   });
@@ -3012,16 +3027,36 @@
                   rsa.p.fromNumberAsync(B - qs, 1, rng, function(){
                       rsa.p.subtract(BigInteger.ONE).gcda(ee, function(r){
                           if (r.compareTo(BigInteger.ONE) == 0 && rsa.p.isProbablePrime(10)) {
+				                  	if(state_key === STATE_KEY_CREATE){                  	
                               setTimeout(loop3,0);
+                            }
+				                    else{
+				                      setTimeout(function(){callback()},0); // escape
+				                    }                            
                           } else {
+				                  	if(state_key === STATE_KEY_CREATE){                  	
                               setTimeout(loop2,0);
+                            }
+				                    else{
+				                      setTimeout(function(){callback()},0); // escape
+				                    }                            
                           }
                       });
                   });
               };
-              setTimeout(loop2,0);
+             	if(state_key === STATE_KEY_CREATE){
+              	setTimeout(loop2,0);
+            	}
+              else{
+                setTimeout(function(){callback()},0); // escape
+              }            	
           };
-          setTimeout(loop1,0);
+          if(state_key === STATE_KEY_CREATE){
+          	setTimeout(loop1,0);          	
+        	}
+          else{
+            setTimeout(function(){callback()},0); // escape
+          }        	
       };
       RSAKey.prototype.generateAsync = RSAGenerateAsync;
 
@@ -4199,7 +4234,7 @@
     </style>
 
   </head>
-  <body onload="javascript:init();" >
+  <body onload="javascript:init();" class="ready" >
     <!-- onfocus="javascript:receiveMsg();"
     <input name="action" type="button" value="init" onclick="javascript:init();">
     <input name="action" type="button" value="saveThreadsPriKey" onclick="javascript:saveThreadsPriKey();">
@@ -4334,16 +4369,16 @@
 	    <div id="formCurrentNew" >
 	      <textarea id="msg" name="msg" cols="65" rows="3" onfocus="setCursorAtTheEnd(this,event)"></textarea>
 	      <!--<input id="encryptButton" value="encryptMsg" type="button" onclick="javascript:encryptAndSendMsg();" >-->
-	      <span class="b" onclick="javascript:encryptAndSendMsg();" >
+	      <span class="b ena" onclick="javascript:encryptAndSendMsg();" >
 	        Send
 	      </span>	 
         <!--     
-	      <a href="#end" class="b" onclick="javascript:encryptAndSendMsg();" >
+	      <a href="#end" class="b ena" onclick="javascript:encryptAndSendMsg();" >
 	        Send O
 	      </a>	
         -->      
 	      <!--<input id="sendButton" value="sendMsg" type="button" onclick="javascript:sendMsg();" >-->
-	      <a href="#end" class="b" onclick="javascript:currentNewHide();" >
+	      <a href="#end" class="b ena" onclick="javascript:currentNewHide();" >
 	        Abort
 	      </a>
 	      <br>
@@ -4361,17 +4396,21 @@
 	    </div>		
 		
 	    <!-- KEY -->
-	    <div id="formKeySetup1" class="hstep" >
-	      <!-- <p class=step> -->
-	        Step 1: Generate Your Pair of Key
-	      <!-- </p> -->
+	    <div id="formKeyLoad1" class=h >
+	      Your Prime-ID:&nbsp;<input name="Address" id="Address" type="text" size="32" maxlength="32" value="" onchange="javascript:handleAddressChanged()" /> <!---->
 	    </div>
-	
+
 	    <div id="formKeyLoad0" class=h >
 	      If you do not have a key yet, go to <a href="#" onclick="keySetupShow()" >Setup</a>
 	    </div>
-	
+
 	    <div id="formKeyLoad2" class=h >
+	    </div>
+	    	    
+	    <div id="formKeySetup1" class="hstep" >
+	      <!-- <p class=step> -->
+	        Generate Your Pair of Key
+	      <!-- </p> -->
 	    </div>
 	
 	    <div id="formKeySetup3" class=h >
@@ -4380,19 +4419,21 @@
 	      then just <a href="#" onclick="keyLoadShow()" >Load</a> it and go to Step 2 (upload) ...
 	      <br/>
 	      <br/>
-	      <input type="radio" id=512 name="bits" value=512 checked=true />
+	      <input type="radio" id=512 name="bits" value=512 disabled=false checked=true />
 	      512
 	      <br/>
-	      <input type="radio" id=1024 name="bits" value=1024 />
+	      <input type="radio" id=1024 name="bits" value=1024 disabled=false />
 	      1024
 	      <br/>
-	      <input type="radio" id=2048 name="bits" value=2048 />
+	      <input type="radio" id=2048 name="bits" value=2048 disabled=false />
 	      2048
 	      <!--
 	      <br/>
-	      <input type="radio" id=4096 name="bits" value=4096 />
+	      <input type="radio" id=4096 name="bits" value=4096 disabled=false />
 	      4096
 	       -->
+	      <a href="#" class="i ir ena" id="buttonCreateCancelUpload" onclick="javascript:createCancelUpload();" >Create</a>
+	      
 	      <input name="action" value="create your pair of keys" id="create" onclick="javascript:createPrivateKey();" type="button">
 	      <br/>
 	      <pre id="priKeyPre">&nbsp;</pre>
@@ -4400,15 +4441,12 @@
 	      Keep this private Key carefully! Copy it and save it to a File!
 	    </div>
 	
+			<!--
 	    <div id="formKeySetup2" class="hstep" >
-	      <!-- <p class=step> -->
 	        Step 2: Upload Your public Key
-	      <!-- </p> -->
 	    </div>
-	
-	    <div id="formKeyLoad1" class=h >
-	      Your Prime-ID:&nbsp;<input name="Address" id="Address" type="text" size="32" maxlength="32" value="" onchange="javascript:handleAddressChanged()" /> <!---->
-	    </div>
+			-->	
+
 	
 	    <form id="formKeySetup4" class=h >
 	      <!-- msgReceivedLast = -1; -->
@@ -4417,7 +4455,7 @@
 	        &nbsp;
 	      </pre>
 	      <!--<input id="upload" value="Upload" type="submit" > -->
-	      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey1();">
+	      <input name="action" type="button" value="uploadPubKey" onclick="javascript:uploadPubKey();">
 	    </form>
 	
 	    <div id="formKeySetting" class=h >

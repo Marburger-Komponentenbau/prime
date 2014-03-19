@@ -1,26 +1,6 @@
     	/** (c) 2014 Matthias Franke **/
-      /** GLOBAL CONSTS **/
-      var STR_NO_KEY = "-- NO KEY LOADED --";
-
-      var STATE_KEY_INITIAL   = 0;
-      var STATE_KEY_CREATE    = 1;
-      var STATE_KEY_CREATED   = 2;
-      var STATE_KEY_UPLOAD    = 3;
-      var STATE_KEY_CANCEL    = 4;
-
-
       /** GLOBAL VARS **/
-      
-      var host = "http://localhost/cgi-bin/"; //"http://conetex.com/cgi-bin/";
       var myPrimeID = null;
-      
-      var state_key = STATE_KEY_INITIAL;
-      var newPrivateKey = null;
-
-			
-
-
-
       
       var contactAlphaSelected = null;
       var contactManuelSelected = null;
@@ -35,7 +15,9 @@
 
       var running = false;
 
+      var newPrivateKey = null;
       
+      var noKeyStr = "-- NO KEY LOADED --";
       
       //var uiStateReceiveOpen = false;
       //var uiStateReceiveCreate = false;
@@ -84,7 +66,7 @@
         if(!el.firstChild.data){
 		      return false;
     		}      
-        if(el.firstChild.data === STR_NO_KEY){
+        if(el.firstChild.data === noKeyStr){
 		      return false;
     		}
 				return true;        		        		  	
@@ -267,70 +249,32 @@
         }
       }
       /** Create Private Key **/
-      
-      function createCancelUpload(){
-      	
-      	// CREATE
-      	if(state_key === STATE_KEY_INITIAL){
-      		state_key = STATE_KEY_CREATE;
-	        // TODO warteanzeigen ein
-          document.getElementsByTagName('body')[0].className = 'working';      
-          document.getElementById('512').disabled = true;
-          document.getElementById('1024').disabled = true;
-          document.getElementById('2048').disabled = true;
-          //document.getElementById('4096').disabled = true;      
-  	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Cancel';
-      		createPrivateKey();
-      		return;
-      	}
-      	
-      	// CANCEL CREATION
-      	if(state_key === STATE_KEY_CREATE){
-					state_key = STATE_KEY_CANCEL;  
-  	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we cancel';
-
-	        var oldPriKeyText = document.getElementById('key').value;
-	        if(oldPriKeyText){
-		        var oldPriKey = new RSAKey();
-		        if( oldPriKey.parseKey(oldPriKeyText) ){
-		        	document.getElementById('priKeyPre').firstChild.data = oldPriKeyText;
-			        document.getElementById('publicKey').firstChild.data = oldPriKey.getPublicKey();         
-		        }
-		        else{
-		        	document.getElementById('priKeyPre').firstChild.data = STR_NO_KEY
-		        	document.getElementById('key').value = STR_NO_KEY;
-		          outInfo("Error - createPrivateKeyFinished: can not parse old private Key!");	        	
-		        }
-					}
-					return;
-			  }
-      	
-      	// UPLOAD
-      	if(state_key === STATE_KEY_CREATED){
-	      	state_key = STATE_KEY_UPLOAD;      	
-	      	if( uploadPubKey() ){
-		        // TODO warteanzeigen ein
-            document.getElementsByTagName('body')[0].className = 'working';
-	      		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we load up';	    
-	      		setTimeout(
-	      		  function(){
-	      		  	outInfo("upload timeout!");
-				        state_key = STATE_KEY_CREATED;  
-				        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';  	      		  	
-	      			}, 120000
-	      		);  		
-	      	}
-	      	else{
-		        state_key = STATE_KEY_CREATED;  
-		        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';
-	      	}
-	      	return;			          
-      	}
-      	
-      }      
-      
+      function createPrivateKeyFinished(){
+        // TODO warteanzeigen aus
+        outLock(null);
+        
+        var oldPriKey = null;
+        var oldPriKeyText = document.getElementById('key').value;
+        if(oldPriKeyText){
+          
+          oldPriKey = new RSAKey();
+          if(! oldPriKey.parseKey(oldPriKeyText)){
+            outInfo("Error - createPrivateKeyFinished: can not parse old private Key!");
+            oldPriKey = null;
+          }
+          
+        }
+        
+        uploadPubKey(oldPriKey, newPrivateKey);
+          
+        document.getElementById('key').value = newPrivateKey.getPrivateKey();
+        document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
+        document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
+        newPrivateKey = null;
+      }
       function createPrivateKey() {
-          //document.getElementById('Address').value = "";//TODO was soll das?
+        if(!newPrivateKey){
+          document.getElementById('Address').value = "";
           newPrivateKey = new RSAKey();
           var bits = 512;
           if (document.getElementById('1024').checked) {
@@ -342,144 +286,22 @@
           /*else if (document.getElementById('4096').checked) {
             bits = 4096;
           }*/
+          /*
+          document.getElementById('key').value = "";
+          document.getElementById('priKeyPre').firstChild.data = " ";
+          document.getElementById('publicKey').firstChild.data = " ";
+          */
           if( outLock("generating Key ...") ){
             newPrivateKey.generateAsync(bits, '010001', createPrivateKeyFinished); //65537 default openssl public exponent for rsa key type
           }
           else{
             outInfo("Fatal Error - createPrivateKey: There is still a running Process...");
-          }     
+          }
+        }
+        else{
+          outInfo("Info - createPrivateKey: the background-process is already creating a new Key...");
+        }
       }
-      function createPrivateKeyFinished(){
-        // TODO warteanzeigen aus
-        document.getElementsByTagName('body')[0].className = 'ready';
-        outLock(null);
-        if(newPrivateKey && newPrivateKey.d && newPrivateKey.n && state_key === STATE_KEY_CREATE){
-	        document.getElementById('priKeyPre').firstChild.data = newPrivateKey.getPrivateKey();
-	        document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
-	        state_key = STATE_KEY_CREATED;  
-	        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Upload';  
-      	}
-      	else{
-      		state_key = STATE_KEY_INITIAL;
-            document.getElementById('512').disabled = false;
-            document.getElementById('1024').disabled = false;
-            document.getElementById('2048').disabled = false;
-            //document.getElementById('4096').disabled = true;      
-
-      		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create retry';  
-      	}
-      }
-
-
-      function uploadPubKey(){
-      	
-        var fromAddress = document.getElementById('Address').value;
-        if (! fromAddress){
-          outInfo("Error - uploadPubKey: No Address! Please setup your Prime-ID!");
-          return false;
-        }
-
-        var sigMsg = ( Math.random() ).toString();
-        var signature = '-';
-        var oldPriKeyText = document.getElementById('key').value;
-        if(oldPriKeyText){
-	        var oldPriKey = new RSAKey();
-	        if( oldPriKey.parseKey(oldPriKeyText) ){
-	          signature = oldPriKey.sign(sigMsg);
-	        }
-	        else{
-	          outInfo("Error - createPrivateKeyFinished: can not parse old private Key!");	        	
-	        }
-	        /* // just for debug:
-	        var oldPubKey = new RSAKey();
-	        if( oldPubKey.parseKey(oldPriKey.getPublicKey()) ) {
-		        var nStr = oldPubKey.n.toString();
-		        var reSig = oldPubKey.verify(signature);
-	        }
-	        */	        
-      	}
-
-        var publicKeyStr = newPrivateKey.getPublicKey();
-        if (! publicKeyStr){
-          outInfo("Error - uploadPubKey: No public Key to upload!");
-          return false;
-        }
-        publicKeyStr = publicKeyStr.replace(/\+/gi,"_");
-        publicKeyStr = publicKeyStr.replace(/-----BEGIN PUBLIC KEY-----/gi,"");
-        publicKeyStr = publicKeyStr.replace(/-----END PUBLIC KEY-----/gi,"");
-
-        var req = getReq();
-        if (! req){
-          outInfo("Error - uploadPubKey: Your browser does not support XMLHTTP.");
-          return false;
-        }
-                
-        var localNewPrivateKey = newPrivateKey;
-        
-        var qryStr = host + 'primeUploadPubKey.py?a=' + fromAddress + '&k=' + publicKeyStr + '&s=' + signature + '&m=' + sigMsg;
-        req.open("GET", qryStr, true);
-        req.onreadystatechange = function () {
-        	if(req.readyState === 4){
-		        if(req.status === 200){
-		          outLock(null);
-		          // TODO warteanzeigen aus
-              document.getElementsByTagName('body')[0].className = 'ready';
-		          var msgChunks = req.responseText.split("|");
-		          if(0 < msgChunks.length){
-		          	if(msgChunks[0] == "1"){// TODO warum funktioniert hier === nicht?
-					        document.getElementById('key').value = localNewPrivateKey.getPrivateKey();
-					        document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
-			  		      document.getElementById('publicKey').firstChild.data = localNewPrivateKey.getPublicKey();	            		
-		          		if(1 < msgChunks.length){
-		          			outInfo("upload success! output: " + msgChunks[1]);
-		          		}
-		          		else{
-		          			outInfo("upload success: " + req.responseText);
-		          		}
-		              state_key = STATE_KEY_INITIAL;  
-                  document.getElementById('512').disabled = false;
-                  document.getElementById('1024').disabled = false;
-                  document.getElementById('2048').disabled = false;
-                  //document.getElementById('4096').disabled = false;                  
-		              document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create';           		
-		          	}
-		          	else{
-		          		if(1 < msgChunks.length){
-		          			outInfo("upload error! output: " + msgChunks[1]);
-		          		}            		
-		          		else{
-		          			outInfo("upload error: "  + req.responseText);
-		          		}
-					        state_key = STATE_KEY_CREATED;  
-					        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';            		
-		          	}
-		          }
-		      		else{
-		      			outInfo("upload unexpected error: " + req.responseText);
-				        state_key = STATE_KEY_CREATED;  
-				        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';            		        			
-		      		}           
-		        }
-		        else{
-	      			outInfo("upload unexpected communication error: status " + req.status.toString() + " - " + req.responseText);
-			        state_key = STATE_KEY_CREATED;  
-			        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';		        	
-		        }        		
-        	}
-        }
-        if( outLock("uploading public Key ...") ){
-          req.send(null);
-          newPrivateKey = null;
-        }
-        else{        	
-          outInfo("Fatal Error - uploadPubKey: There is still a running Process...");
-          return false;
-        }
-        return true;
-      }      
-      
-      
-      
       function savePrivateKey() {
         if(newPrivateKey){
           var prkPrinted = newPrivateKey.getPrivateKey();
@@ -561,6 +383,75 @@
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
       }
+      function uploadPubKey1(  ){
+      
+        var privateKey = new RSAKey();
+        if(! privateKey.parseKey(document.getElementById('key').value) ) {
+          return;
+        }
+        
+        var publicKey = new RSAKey();
+        if(! publicKey.parseKey(document.getElementById('publicKey').firstChild.data) ) {
+          return;
+        } 
+        
+        
+        uploadPubKey( privateKey, privateKey );
+      }
+      function uploadPubKey( oldPriKey, newPriKey ){
+      
+        //document.getElementById('key').value = newPrivateKey.getPrivateKey();
+      
+        var publicKeyStr = newPriKey.getPublicKey();
+        if (! publicKeyStr){
+          outInfo("Error - uploadPubKey: No public Key to upload!");
+          return;
+        }
+        var fromAddress = document.getElementById('Address').value;
+        if (! fromAddress){
+          outInfo("Error - uploadPubKey: No Address! Please setup your Prime-ID!");
+          return;
+        }
+        var req = getReq();
+        if (! req){
+          outInfo("Error - uploadPubKey: Your browser does not support XMLHTTP.");
+          return;
+        }
+        
+        var oldPubKey = new RSAKey();
+        if(! oldPubKey.parseKey(oldPriKey.getPublicKey()) ) {
+          return;
+        }
+        var sigMsg = ( Math.random() ).toString();
+        var signature = oldPriKey.sign(sigMsg);
+        var reSig = oldPubKey.verify(signature);
+                
+        var nStr = oldPubKey.n.toString();
+        
+        publicKeyStr = publicKeyStr.replace(/\+/gi,"_");
+        publicKeyStr = publicKeyStr.replace(/-----BEGIN PUBLIC KEY-----/gi,"");
+        publicKeyStr = publicKeyStr.replace(/-----END PUBLIC KEY-----/gi,"");
+                
+        /*
+        if(oldPriKey){
+           oldPriKey.
+        }
+        */
+        var qryStr = 'http://conetex.com/cgi-bin/primeUploadPubKey.py?a=' + fromAddress + '&k=' + publicKeyStr + '&s=' + signature + '&m=' + sigMsg;
+        req.open("GET", qryStr, true);
+        req.onreadystatechange = function () {
+          if(req.readyState==4  && req.status==200){
+            outLock(null);
+            outInfo("upload finished! output: " + req.responseText);
+          }
+        }
+        if( outLock("uploading public Key ...") ){
+          req.send(null);
+        }
+        else{
+          outInfo("Fatal Error - uploadPubKey: There is still a running Process...");
+        }
+      }
       /** Receive Messages **/
       function receiveMsg(){
         // TODO warteanzeigen aus
@@ -580,7 +471,7 @@
                     msgReceivedLast = newMsgID;
                     var contactMsgs = document.getElementById("u" + msgChunks[i-1]);  // FROM
                     if(! contactMsgs){
-                      var contactKey = STR_NO_KEY;
+                      var contactKey = noKeyStr;
                       saveNewContactParam(msgChunks[i-1], contactKey, msgChunks[i-1]);
                       contactMsgs = document.getElementById("u" + msgChunks[i-1]);
                     }
@@ -1412,7 +1303,7 @@
         document.getElementById('menuKeyItemSetup').style.fontWeight='normal';
         document.getElementById('formKeySetup1').style.display='none';
         document.getElementById('formKeyLoad1').style.display='block';
-        //document.getElementById('formKeySetup2').style.display='none';
+        document.getElementById('formKeySetup2').style.display='none';
         document.getElementById('formKeySetup3').style.display='none';
         document.getElementById('formKeyLoad0').style.display='block';
         document.getElementById('formKeyLoad2').style.display='block';
@@ -1439,7 +1330,7 @@
         document.getElementById('menuKeyItemSetup').style.fontWeight='bold';
         document.getElementById('formKeySetup1').style.display='block';
         document.getElementById('formKeyLoad1').style.display='block';
-        //document.getElementById('formKeySetup2').style.display='block';
+        document.getElementById('formKeySetup2').style.display='block';
         document.getElementById('formKeySetup3').style.display='block';
         document.getElementById('formKeyLoad0').style.display='none';
         document.getElementById('formKeyLoad2').style.display='none';
@@ -1450,7 +1341,7 @@
         document.getElementById('menuKeyItemSetup').style.fontWeight='normal';
         document.getElementById('formKeySetup1').style.display='none';
         document.getElementById('formKeyLoad1').style.display='none';
-        //document.getElementById('formKeySetup2').style.display='none';
+        document.getElementById('formKeySetup2').style.display='none';
         document.getElementById('formKeySetup3').style.display='none';
         //document.getElementById('formKeyLoad0').style.display='none';
         //document.getElementById('formKeyLoad2').style.display='none';
