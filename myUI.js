@@ -5,22 +5,18 @@
       var STATE_KEY_INITIAL   = 0;
       var STATE_KEY_CREATE    = 1;
       var STATE_KEY_CREATED   = 2;
-      var STATE_KEY_UPLOAD    = 3;
-      var STATE_KEY_CANCEL    = 4;
+      var STATE_KEY_CANCEL    = 3;
+      var STATE_KEY_UPLOAD    = 4;
+      var STATE_KEY_UPLOADED  = 5;
 
 
       /** GLOBAL VARS **/
-      
-      var host = "http://localhost/cgi-bin/"; //"http://conetex.com/cgi-bin/";
-      var myPrimeID = null;
-      
+            
+      var host = "http://localhost/cgi-bin/"; /* "http://conetex.com/cgi-bin/";  */
+      var myPrimeID = null;     
       var state_key = STATE_KEY_INITIAL;
+      
       var newPrivateKey = null;
-
-			
-
-
-
       
       var contactAlphaSelected = null;
       var contactManuelSelected = null;
@@ -35,7 +31,7 @@
 
       var running = false;
 
-      
+   
       
       //var uiStateReceiveOpen = false;
       //var uiStateReceiveCreate = false;
@@ -63,7 +59,8 @@
         if((h.length & 1) == 0) return h; else return "0" + h;
       }
       RSAKey.prototype.sign = RSASign;
-    
+
+
       function getCurrentIdStr(){
         if(currentThread){
           var idStr = currentThread.id;
@@ -266,29 +263,19 @@
           outInfo("Error - sendMsg: No Message to send");
         }
       }
+
       /** Create Private Key **/
-      
       function createCancelUpload(){
-      	
-      	// CREATE
-      	if(state_key === STATE_KEY_INITIAL){
-      		state_key = STATE_KEY_CREATE;
-	        // TODO warteanzeigen ein
-          document.getElementsByTagName('body')[0].className = 'working';      
-          document.getElementById('512').disabled = true;
-          document.getElementById('1024').disabled = true;
-          document.getElementById('2048').disabled = true;
-          //document.getElementById('4096').disabled = true;      
-  	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Cancel';
+        // CREATE
+      	if(state_key === STATE_KEY_INITIAL || state_key === STATE_KEY_UPLOADED){
+          setStateKeyCREATE();
       		createPrivateKey();
       		return;
       	}
       	
       	// CANCEL CREATION
       	if(state_key === STATE_KEY_CREATE){
-					state_key = STATE_KEY_CANCEL;  
-  	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we cancel';
-
+          setStateKeyCANCEL();
 	        var oldPriKeyText = document.getElementById('key').value;
 	        if(oldPriKeyText){
 		        var oldPriKey = new RSAKey();
@@ -305,69 +292,110 @@
 					return;
 			  }
       	
+        
       	// UPLOAD
       	if(state_key === STATE_KEY_CREATED){
-	      	state_key = STATE_KEY_UPLOAD;      	
 	      	if( uploadPubKey() ){
-		        // TODO warteanzeigen ein
-            document.getElementsByTagName('body')[0].className = 'working';
-	      		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we load up';	    
-	      		setTimeout(
-	      		  function(){
-	      		  	outInfo("upload timeout!");
-				        state_key = STATE_KEY_CREATED;  
-				        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';  	      		  	
-	      			}, 120000
+            setStateKeyUPLOAD();
+	      		setTimeout(           
+                function(){
+                  if(state_key === STATE_KEY_UPLOAD){
+  	      		  	  outInfo("upload timeout!");
+                    unsetStateKeyUPLOAD();
+  				          setStateKeyCREATED();
+                  }  	      		  	
+	      			  }
+              , 120000
 	      		);  		
 	      	}
 	      	else{
-		        state_key = STATE_KEY_CREATED;  
-		        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';
+            setStateKeyCREATED();
 	      	}
 	      	return;			          
       	}
-      	
+      }             
+      function setStateKeyUPLOAD(){
+  		  // TODO warteanzeigen ein
+        state_key = STATE_KEY_UPLOAD;
+        document.getElementsByTagName('body')[0].className = 'working';
+    		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we load up';	
+      }      
+      function unsetStateKeyUPLOAD(){
+  		  document.getElementsByTagName('body')[0].className = 'ready';	
+      }      
+      function setStateKeyCREATED(){
+        state_key = STATE_KEY_CREATED;
+  		  document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';
+      }
+      function setStateKeyCANCEL(){
+				state_key = STATE_KEY_CANCEL;  
+	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we cancel';        
+      }
+      function setStateKeyCREATE(){
+    		state_key = STATE_KEY_CREATE;
+        // TODO warteanzeigen ein
+        document.getElementsByTagName('body')[0].className = 'working';      
+        document.getElementById('512').disabled = true;
+        document.getElementById('1024').disabled = true;
+        document.getElementById('2048').disabled = true;
+        //document.getElementById('4096').disabled = true;      
+	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Cancel';					        
       }      
       
+      function setStateKeyUPLOADED(){
+		              state_key = STATE_KEY_UPLOADED;  
+                  document.getElementById('512').disabled = false;
+                  document.getElementById('1024').disabled = false;
+                  document.getElementById('2048').disabled = false;
+                  //document.getElementById('4096').disabled = false;                  
+		              document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create'; 
+      }
+      function setStateKeyINITIAL(){
+				state_key = STATE_KEY_INITIAL;
+        document.getElementById('512').disabled = false;
+        document.getElementById('1024').disabled = false;
+        document.getElementById('2048').disabled = false;
+        //document.getElementById('4096').disabled = true;           
+	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create retry';       
+      }
+      
+            
       function createPrivateKey() {
-          //document.getElementById('Address').value = "";//TODO was soll das?
-          newPrivateKey = new RSAKey();
-          var bits = 512;
-          if (document.getElementById('1024').checked) {
-            bits = 1024;
-          }
-          else if (document.getElementById('2048').checked) {
-            bits = 2048;
-          }
-          /*else if (document.getElementById('4096').checked) {
-            bits = 4096;
-          }*/
-          if( outLock("generating Key ...") ){
-            newPrivateKey.generateAsync(bits, '010001', createPrivateKeyFinished); //65537 default openssl public exponent for rsa key type
-          }
-          else{
-            outInfo("Fatal Error - createPrivateKey: There is still a running Process...");
-          }     
+        //document.getElementById('Address').value = "";//TODO was soll das?
+        newPrivateKey = new RSAKey();
+        var bits = 512;
+        if (document.getElementById('1024').checked) {
+          bits = 1024;
+        }
+        else if (document.getElementById('2048').checked) {
+          bits = 2048;
+        }
+        /*else if (document.getElementById('4096').checked) {
+          bits = 4096;
+        }*/
+        if( outLock("generating Key ...") ){
+          newPrivateKey.generateAsync(bits, '010001', createPrivateKeyFinished); //65537 default openssl public exponent for rsa key type
+        }
+        else{
+          outInfo("Fatal Error - createPrivateKey: There is still a running Process...");
+        }     
       }
       function createPrivateKeyFinished(){
-        // TODO warteanzeigen aus
-        document.getElementsByTagName('body')[0].className = 'ready';
-        outLock(null);
-        if(newPrivateKey && newPrivateKey.d && newPrivateKey.n && state_key === STATE_KEY_CREATE){
-	        document.getElementById('priKeyPre').firstChild.data = newPrivateKey.getPrivateKey();
-	        document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
-	        state_key = STATE_KEY_CREATED;  
-	        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Upload';  
-      	}
-      	else{
-      		state_key = STATE_KEY_INITIAL;
-            document.getElementById('512').disabled = false;
-            document.getElementById('1024').disabled = false;
-            document.getElementById('2048').disabled = false;
-            //document.getElementById('4096').disabled = true;      
-
-      		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create retry';  
-      	}
+        if(state_key === STATE_KEY_CREATE){
+          // TODO warteanzeigen aus
+          document.getElementsByTagName('body')[0].className = 'ready';
+          outLock(null);
+          if(newPrivateKey && newPrivateKey.d && newPrivateKey.n){
+  	        document.getElementById('priKeyPre').firstChild.data = newPrivateKey.getPrivateKey();
+  	        document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
+  	        setStateKeyCREATED();
+            createCancelUpload();
+  	        //document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Upload';  
+        	}
+        	else{
+            setStateKeyINITIAL()
+        	}
+        }
       }
 
 
@@ -429,19 +457,14 @@
 		          	if(msgChunks[0] == "1"){// TODO warum funktioniert hier === nicht?
 					        document.getElementById('key').value = localNewPrivateKey.getPrivateKey();
 					        document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
-			  		      document.getElementById('publicKey').firstChild.data = localNewPrivateKey.getPublicKey();	            		
-		          		if(1 < msgChunks.length){
+			  		      document.getElementById('publicKey').firstChild.data = localNewPrivateKey.getPublicKey();
+                  if(1 < msgChunks.length){
 		          			outInfo("upload success! output: " + msgChunks[1]);
 		          		}
 		          		else{
 		          			outInfo("upload success: " + req.responseText);
 		          		}
-		              state_key = STATE_KEY_INITIAL;  
-                  document.getElementById('512').disabled = false;
-                  document.getElementById('1024').disabled = false;
-                  document.getElementById('2048').disabled = false;
-                  //document.getElementById('4096').disabled = false;                  
-		              document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create';           		
+                  setStateKeyUPLOADED();          		
 		          	}
 		          	else{
 		          		if(1 < msgChunks.length){
@@ -450,20 +473,17 @@
 		          		else{
 		          			outInfo("upload error: "  + req.responseText);
 		          		}
-					        state_key = STATE_KEY_CREATED;  
-					        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';            		
+					        ssetStateKeyCREATED();            		
 		          	}
 		          }
 		      		else{
 		      			outInfo("upload unexpected error: " + req.responseText);
-				        state_key = STATE_KEY_CREATED;  
-				        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';            		        			
+				        setStateKeyCREATED();            		        			
 		      		}           
 		        }
 		        else{
 	      			outInfo("upload unexpected communication error: status " + req.status.toString() + " - " + req.responseText);
-			        state_key = STATE_KEY_CREATED;  
-			        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';		        	
+			        setStateKeyCREATED();		        	
 		        }        		
         	}
         }
@@ -477,7 +497,7 @@
         }
         return true;
       }      
-      
+
       
       
       function savePrivateKey() {
@@ -499,6 +519,7 @@
       function getKeyBlob(keyStr) {
         return new Blob([ keyStr ], {type: "text/plain;charset=utf-8"});
       }
+
       function readFileSelect(aFile) {
         var aFileName = escape(aFile.name);
         if(aFile.size > 4550){
@@ -508,17 +529,14 @@
           outInfo("Error - readFileSelect: Sorry! We expect am pem-File!");
         }
         else{
-          document.getElementById('key').value = "";
-          document.getElementById('publicKey').firstChild.data = " ";
-          document.getElementById('priKeyPre').firstChild.data = " ";
+          //document.getElementById('key').value = "";
+          //document.getElementById('publicKey').firstChild.data = " ";
+          //document.getElementById('priKeyPre').firstChild.data = " ";
           var reader = new FileReader();
           reader.onload = (function(theFile) {
             return function(e) {
               var opendPrivateKey = new RSAKey();
               if(opendPrivateKey.parseKey(e.target.result)){
-                var prkPrinted = opendPrivateKey.getPrivateKey();
-                document.getElementById('key').value = prkPrinted;
-                document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
                 if(! opendPrivateKey.encrypt){
                   outInfo("Error - readFileSelect: opendPrivateKey.encrypt is not available!");
                 }
@@ -529,9 +547,12 @@
                   // TODO Fehlerbehandlung
                   outInfo("Error - readFileSelect: opendPrivateKey.generateAsync is not available!");
                 }
-                // TODO: nur bei Setup mode
-                var pubPrinted = opendPrivateKey.getPublicKey();
-                document.getElementById('publicKey').firstChild.data = pubPrinted;
+                setStateKeyCREATED();
+                var prkPrinted = opendPrivateKey.getPrivateKey();
+                document.getElementById('key').value = prkPrinted;
+                document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
+                var pubPrinted = opendPrivateKey.getPublicKey(); // TODO: nur bei Setup mode wird publicKey gebraucht
+                document.getElementById('publicKey').firstChild.data = pubPrinted;                
               }
               else{
                 // TODO: Sorry can not parse this key!
@@ -544,7 +565,7 @@
           document.getElementById('Address').value = aFileName.substr(0, aFileName.length-4);
           handleAddressChanged();
           //document.getElementById('keyfile').firstChild.data = aFile.name;
-          handleKeyChanged(); //TODO: Nur im Open - Mode
+          //handleKeyChanged(); //TODO: Nur im Open - Mode
           //
         }
       }
@@ -561,6 +582,9 @@
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
       }
+
+
+
       /** Receive Messages **/
       function receiveMsg(){
         // TODO warteanzeigen aus
@@ -615,6 +639,8 @@
         */
         window.scrollTo(0, document.body.scrollHeight);
       }
+
+
       /** Decrypt Message **/
       function decryptMsg() {
         if(msgSelectedDiv){
@@ -653,6 +679,8 @@
           outInfo("Info - decryptMsg: no Message selected!");
         }
       }
+    
+
       /** Server-Communication **/
       function getReq(){
         var req = null;
@@ -675,19 +703,22 @@
         }
         return req;
       }
+
       /** Persistence **/
       function clearLocalStore() {
         msgReceivedLast = -1;
         if(myPrimeID){
-        	localStorage.removeItem("localStorePriKey" + msgReceivedLast);
-        	//localStorage.removeItem("address" + msgReceivedLast);
-        	localStorage.removeItem("priKey" + msgReceivedLast);
-        	localStorage.removeItem("pubKey" + msgReceivedLast);
-        	localStorage.removeItem("localStoreMessages" + msgReceivedLast);
-        	localStorage.removeItem("threads" + msgReceivedLast);
-        	localStorage.removeItem("threadsAlpha" + msgReceivedLast);
-        	localStorage.removeItem("threadsManuel" + msgReceivedLast);
-        	localStorage.removeItem("msgReceivedLast" + msgReceivedLast);
+        	localStorage.removeItem("localStorePriKey" + myPrimeID);
+        	//localStorage.removeItem("address" + myPrimeID);
+          localStorage.removeItem("msgReceivedLast" + myPrimeID);
+          localStorage.removeItem("stateKey" + myPrimeID);
+        	localStorage.removeItem("priKey" + myPrimeID);
+        	localStorage.removeItem("pubKey" + myPrimeID);
+        	localStorage.removeItem("localStoreMessages" + myPrimeID);
+        	localStorage.removeItem("threads" + myPrimeID);
+        	localStorage.removeItem("threadsAlpha" + myPrimeID);
+        	localStorage.removeItem("threadsManuel" + myPrimeID);
+        	localStorage.removeItem("msgReceivedLast" + myPrimeID);
       	}
       }
       function saveThreadsPriKey() {
@@ -703,11 +734,13 @@
 	          	localStorage.setItem("localStorePriKey" + myPrimeID, 'Y');
 	            var k = document.getElementById('key');
 	            if(k){
+                localStorage.setItem("stateKey" + myPrimeID, state_key.toString());
 	              localStorage.setItem("priKey" + myPrimeID, k.value);
 	              //localStorage.address = document.getElementById('Address').value;
 	              localStorage.setItem("pubKey" + myPrimeID, document.getElementById('publicKey').firstChild.data);//TODO das kann entfallen. lieber aus priKey erstellen ...
 	            }
 	            else{
+                localStorage.setItem("stateKey" + myPrimeID, STATE_KEY_INITIAL.toString());
 	              outInfo("Info - savePriKey: No Key loaded! Please setup!");
 	            }
 	          }
@@ -756,6 +789,34 @@
 	                  document.getElementById('priKeyPre').firstChild.data = priKeyStr;
 	                  document.getElementById('publicKey').firstChild.data = localStorage.getItem("pubKey" + myPrimeID);//TODO das kann entfallen. lieber aus priKey erstellen ...
 	                  //handleAddressChanged();
+                    var state = localStorage.getItem("stateKey" + myPrimeID);
+                    if(state){   
+                      state_key = parseInt(state);                    
+                      if( state_key == STATE_KEY_INITIAL ){ // TODO geht === ?
+                        setStateKeyINITIAL();
+                      }
+                      else if( state_key == STATE_KEY_CREATE ){  
+                        setStateKeyCREATE();                      
+                      }   
+                      else if( state_key == STATE_KEY_CREATED ){
+                        setStateKeyCREATED();
+                      }
+                      else if( state_key == STATE_KEY_CANCEL ){
+                        setStateKeyCANCEL();
+                      }
+                      else if( state_key == STATE_KEY_UPLOAD ){
+                        setStateKeyUPLOAD();
+                      }                                                                                        
+                      else if( state_key == STATE_KEY_UPLOADED ){
+                        setStateKeyUPLOADED();
+                      }
+                      else{
+                        setStateKeyINITIAL();                      
+                      }
+                    }
+                    else{
+                      setStateKeyCREATED();
+                    }
 	                }
 	                else{
 	                  outInfo("Info - loadPriKey: found no stored Key!");
@@ -1278,8 +1339,13 @@
       	}
       }
       function handleKeyChanged(){
-        document.getElementById('priKeyPre').firstChild.data = document.getElementById('key').value;
-        keyShow();
+        var key = document.getElementById('key').value;
+        document.getElementById('priKeyPre').firstChild.data = key;
+        if(opendPrivateKey.parseKey(key)){
+          var pubPrinted = opendPrivateKey.getPublicKey(); // TODO: nur bei Setup mode wird publicKey gebraucht
+          document.getElementById('publicKey').firstChild.data = pubPrinted;        
+        }
+        //keyShow();
       }
       function handleSelectMsg(e){
         var ea = e.target;
@@ -1678,3 +1744,4 @@
       }
 
       window.onbeforeunload = function() { saveThreadsPriKey(); };
+      

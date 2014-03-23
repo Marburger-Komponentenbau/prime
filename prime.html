@@ -4225,7 +4225,7 @@
     <!-- myUI.js -->
     <script src='myUI.js'>
 
-    </script>
+    </script>   
     
     <!-- myUI.css -->
     <link rel="stylesheet" type="text/css" href="myUI.css">
@@ -4419,24 +4419,34 @@
 	      then just <a href="#" onclick="keyLoadShow()" >Load</a> it and go to Step 2 (upload) ...
 	      <br/>
 	      <br/>
-	      <input type="radio" id=512 name="bits" value=512 disabled=false checked=true />
-	      512
-	      <br/>
-	      <input type="radio" id=1024 name="bits" value=1024 disabled=false />
-	      1024
-	      <br/>
-	      <input type="radio" id=2048 name="bits" value=2048 disabled=false />
-	      2048
-	      <!--
-	      <br/>
-	      <input type="radio" id=4096 name="bits" value=4096 disabled=false />
-	      4096
-	       -->
-	      <a href="#" class="i ir ena" id="buttonCreateCancelUpload" onclick="javascript:createCancelUpload();" >Create</a>
-	      
+        
+        <table border="0">
+          <tr>
+            <td style="padding-bottom: 0.4em">     <!--margin-bottom: 0.3em; -->
+              <input type="radio" id="512" name="bitsa" value="512" checked="true" />
+      	      512
+      	      <br/>
+      	      <input type="radio" id="1024" name="bitsa" value="1024" />
+      	      1024
+      	      <br/>
+      	      <input type="radio" id="2048" name="bitsa" value="2048" />
+      	      2048
+      	      <!--
+      	      <br/>
+      	      <input type="radio" id=4096 name="bits" value=4096 disabled=true />
+      	      4096
+      	       -->              
+            </td>
+            <td style="vertical-align: bottom">
+              <a href="#" class="b ena" id="buttonCreateCancelUpload" onclick="javascript:createCancelUpload();" >Create</a>
+            </td>
+          </tr>
+        </table>
+        <!--
 	      <input name="action" value="create your pair of keys" id="create" onclick="javascript:createPrivateKey();" type="button">
 	      <br/>
-	      <pre id="priKeyPre">&nbsp;</pre>
+        -->
+	      <pre id="priKeyPre">x&nbsp;</pre>
 	      <br/>
 	      Keep this private Key carefully! Copy it and save it to a File!
 	    </div>
