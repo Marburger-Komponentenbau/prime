@@ -473,17 +473,20 @@
 		          		else{
 		          			outInfo("upload error: "  + req.responseText);
 		          		}
-					        ssetStateKeyCREATED();            		
+                  newPrivateKey = localNewPrivateKey;
+					        setStateKeyCREATED();            		
 		          	}
 		          }
 		      		else{
 		      			outInfo("upload unexpected error: " + req.responseText);
+                newPrivateKey = localNewPrivateKey;
 				        setStateKeyCREATED();            		        			
 		      		}           
 		        }
 		        else{
 	      			outInfo("upload unexpected communication error: status " + req.status.toString() + " - " + req.responseText);
-			        setStateKeyCREATED();		        	
+			        newPrivateKey = localNewPrivateKey;
+              setStateKeyCREATED();		        	
 		        }        		
         	}
         }

@@ -121,18 +121,43 @@
       .working .ena { /* enabled */
         cursor: progress;   
       }
+      
       .working .dis { /* disabled */
         cursor: progress;/*auto; */
-      }                
-      .ena { /* enabled */
-        color: white;       
-        cursor: pointer;   
       }
       .dis { /* disabled */
         color: #FFE2B4;   
         cursor: default;/*auto; */
-      }           
-            
+      }                      
+      .ena { /* enabled */
+        color: white;       
+        cursor: pointer;
+        /* text-shadow: 0 -1px 1px white, 0 1px 1px black; */ 
+      }
+      .ena:hover { 
+        text-shadow: 0 0 0.2em white; 
+        /* text-shadow: 0 -1px 1px black, 0 1px 1px white; */
+      }      
+                    
+      .b { /* button */
+      	background-color: orange;
+        
+        padding-top: 0.4em;
+        padding-right: 1em;  
+        padding-bottom: 0.4em;
+        padding-left: 1em;      
+
+        margin-top: 0;
+        margin-right: 0;  
+        margin-bottom: 0.3em;
+        margin-left: 1em;      
+
+        text-decoration: none;
+        
+        text-align: left;
+        float: left;         
+      }
+      
       #formCurrentNew {
       	border-top: white 0.3em solid;
 				border-right-width: 0;
@@ -156,26 +181,7 @@
 				float: left; 
         margin-left: 0.4em; 
 			}
-        
-      .b { /* button */
-      	background-color: orange;
-        
-        padding-top: 0.4em;
-        padding-right: 1em;  
-        padding-bottom: 0.4em;
-        padding-left: 1em;      
-
-        margin-top: 0;
-        margin-right: 0;  
-        margin-bottom: 0.3em;
-        margin-left: 1em;      
-
-        text-decoration: none;
-        
-        text-align: left;
-        float: left;         
-      }
-
+      
       div.messageMy {
         padding: 0.3em;
         color: grey;
