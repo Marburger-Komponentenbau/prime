@@ -836,6 +836,7 @@
         	}
         	else{
         		myPrimeID = null;
+            document.getElementById('localStorePriKey').checked = true;
         		outInfo("Info - loadPriKey: no Prime-ID in local-Store!");
         	}
         }
@@ -845,20 +846,25 @@
       }
       function saveThreads(){
         if (document.getElementById('localStoreMessages')) {
-          if (document.getElementById('localStoreMessages').checked) {
-          	localStorage.setItem("localStoreMessages" + myPrimeID, 'Y');
-            if(msgSelectedDiv){
-              msgSelectedDiv.className = msgSelectedDiv.className.substring(0, msgSelectedDiv.className.length-4); 
-              msgSelectedDiv = null;            
+          if(myPrimeID){
+            if (document.getElementById('localStoreMessages').checked) {
+            	localStorage.setItem("localStoreMessages" + myPrimeID, 'Y');
+              if(msgSelectedDiv){
+                msgSelectedDiv.className = msgSelectedDiv.className.substring(0, msgSelectedDiv.className.length-4); 
+                msgSelectedDiv = null;            
+              }
+            	localStorage.setItem("threads" + myPrimeID, document.getElementById("threads").innerHTML);
+            	localStorage.setItem("threadsAlpha" + myPrimeID, document.getElementById("formContactsOrdertypeAlpha").innerHTML);
+            	localStorage.setItem("threadsManuel" + myPrimeID, document.getElementById("formContactsOrdertypeManuel").innerHTML);
+              //Hint: JSON.stringify(threadsAlpha);
             }
-          	localStorage.setItem("threads" + myPrimeID, document.getElementById("threads").innerHTML);
-          	localStorage.setItem("threadsAlpha" + myPrimeID, document.getElementById("formContactsOrdertypeAlpha").innerHTML);
-          	localStorage.setItem("threadsManuel" + myPrimeID, document.getElementById("formContactsOrdertypeManuel").innerHTML);
-            //Hint: JSON.stringify(threadsAlpha);
+            else{
+            	localStorage.setItem("localStoreMessages" + myPrimeID, 'N');
+            }
           }
-          else{
-          	localStorage.setItem("localStoreMessages" + myPrimeID, 'N');
-          }
+        	else{
+        		outInfo("Info - savePriKey: No Prime-ID to store! Please setup!");
+        	}
         }
         else{
           outInfo("Info - saveThreads: local-Store is not available! Please update your Browser!");
