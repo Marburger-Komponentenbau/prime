@@ -2,16 +2,14 @@
       /** GLOBAL CONSTS **/
       var STR_NO_KEY = "-- NO KEY LOADED --";
 
-      var STATE_KEY_INITIAL   = 0;
-      var STATE_KEY_CREATE    = 1;
-      var STATE_KEY_CREATED   = 2;
-      var STATE_KEY_CANCEL    = 3;
-      var STATE_KEY_UPLOAD    = 4;
-      var STATE_KEY_UPLOADED  = 5;
+      var STATE_KEY_INITIAL  = 0;
+      var STATE_KEY_CREATE   = 1;
+      var STATE_KEY_CREATED  = 2;
+      var STATE_KEY_CANCEL   = 3;
+      var STATE_KEY_UPLOAD   = 4;
+      var STATE_KEY_UPLOADED = 5;
 
-
-      /** GLOBAL VARS **/
-            
+      /** GLOBAL VARS **/          
       var host = "http://localhost/cgi-bin/"; /* "http://conetex.com/cgi-bin/";  */
       var myPrimeID = null;     
       var state_key = STATE_KEY_INITIAL;
@@ -265,6 +263,24 @@
       }
 
       /** Create Private Key **/
+      function resetCreateKey(){
+      
+          setStateKeyUPLOADED();
+	        var oldPriKeyText = document.getElementById('key').value;
+	        if(oldPriKeyText){
+		        var oldPriKey = new RSAKey();
+		        if( oldPriKey.parseKey(oldPriKeyText) ){
+		        	document.getElementById('priKeyPre').firstChild.data = oldPriKeyText;
+			        document.getElementById('publicKey').firstChild.data = oldPriKey.getPublicKey();         
+		        }
+		        else{
+		        	document.getElementById('priKeyPre').firstChild.data = STR_NO_KEY
+		        	document.getElementById('key').value = STR_NO_KEY;
+		          outInfo("Error - createPrivateKeyFinished: can not parse old private Key!");	        	
+		        }
+					}
+      
+      }
       function createCancelUpload(){
         // CREATE
       	if(state_key === STATE_KEY_INITIAL || state_key === STATE_KEY_UPLOADED){
@@ -292,7 +308,6 @@
 					return;
 			  }
       	
-        
       	// UPLOAD
       	if(state_key === STATE_KEY_CREATED){
 	      	if( uploadPubKey() ){
@@ -301,8 +316,7 @@
                 function(){
                   if(state_key === STATE_KEY_UPLOAD){
   	      		  	  outInfo("upload timeout!");
-                    unsetStateKeyUPLOAD();
-  				          setStateKeyCREATED();
+                    setStateKeyCREATED();
                   }  	      		  	
 	      			  }
               , 120000
@@ -314,22 +328,15 @@
 	      	return;			          
       	}
       }             
-      function setStateKeyUPLOAD(){
-  		  // TODO warteanzeigen ein
-        state_key = STATE_KEY_UPLOAD;
-        document.getElementsByTagName('body')[0].className = 'working';
-    		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we load up';	
-      }      
-      function unsetStateKeyUPLOAD(){
+
+      function setStateKeyINITIAL(){
+				state_key = STATE_KEY_INITIAL;
   		  document.getElementsByTagName('body')[0].className = 'ready';	
-      }      
-      function setStateKeyCREATED(){
-        state_key = STATE_KEY_CREATED;
-  		  document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';
-      }
-      function setStateKeyCANCEL(){
-				state_key = STATE_KEY_CANCEL;  
-	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we cancel';        
+        document.getElementById('512').disabled = false;
+        document.getElementById('1024').disabled = false;
+        document.getElementById('2048').disabled = false;
+        //document.getElementById('4096').disabled = true;           
+	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create retry';       
       }
       function setStateKeyCREATE(){
     		state_key = STATE_KEY_CREATE;
@@ -341,24 +348,30 @@
         //document.getElementById('4096').disabled = true;      
 	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Cancel';					        
       }      
-      
-      function setStateKeyUPLOADED(){
-		              state_key = STATE_KEY_UPLOADED;  
-                  document.getElementById('512').disabled = false;
-                  document.getElementById('1024').disabled = false;
-                  document.getElementById('2048').disabled = false;
-                  //document.getElementById('4096').disabled = false;                  
-		              document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create'; 
+      function setStateKeyCREATED(){
+        state_key = STATE_KEY_CREATED;
+  		  document.getElementsByTagName('body')[0].className = 'ready';	
+  		  document.getElementById('buttonCreateCancelUpload').firstChild.data = 'retry Upload';
       }
-      function setStateKeyINITIAL(){
-				state_key = STATE_KEY_INITIAL;
+      function setStateKeyUPLOAD(){
+  		  // TODO warteanzeigen ein
+        state_key = STATE_KEY_UPLOAD;
+        document.getElementsByTagName('body')[0].className = 'working';
+    		document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we load up';	
+      }      
+      function setStateKeyUPLOADED(){
+        state_key = STATE_KEY_UPLOADED;  
+  		  document.getElementsByTagName('body')[0].className = 'ready';	
         document.getElementById('512').disabled = false;
         document.getElementById('1024').disabled = false;
         document.getElementById('2048').disabled = false;
-        //document.getElementById('4096').disabled = true;           
-	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create retry';       
+        //document.getElementById('4096').disabled = false;                  
+        document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Create'; 
       }
-      
+      function setStateKeyCANCEL(){
+				state_key = STATE_KEY_CANCEL;  
+	      document.getElementById('buttonCreateCancelUpload').firstChild.data = 'please wait ... we cancel';        
+      }      
             
       function createPrivateKey() {
         //document.getElementById('Address').value = "";//TODO was soll das?
@@ -373,12 +386,12 @@
         /*else if (document.getElementById('4096').checked) {
           bits = 4096;
         }*/
-        if( outLock("generating Key ...") ){
+        //if( outLock("generating Key ...") ){
           newPrivateKey.generateAsync(bits, '010001', createPrivateKeyFinished); //65537 default openssl public exponent for rsa key type
-        }
-        else{
-          outInfo("Fatal Error - createPrivateKey: There is still a running Process...");
-        }     
+        //}
+        //else{
+        //  outInfo("Fatal Error - createPrivateKey: There is still a running Process...");
+        //}     
       }
       function createPrivateKeyFinished(){
         if(state_key === STATE_KEY_CREATE){
@@ -388,12 +401,12 @@
           if(newPrivateKey && newPrivateKey.d && newPrivateKey.n){
   	        document.getElementById('priKeyPre').firstChild.data = newPrivateKey.getPrivateKey();
   	        document.getElementById('publicKey').firstChild.data = newPrivateKey.getPublicKey();
-  	        setStateKeyCREATED();
+  	        state_key = STATE_KEY_CREATED;
             createCancelUpload();
   	        //document.getElementById('buttonCreateCancelUpload').firstChild.data = 'Upload';  
         	}
         	else{
-            setStateKeyINITIAL()
+            setStateKeyINITIAL();
         	}
         }
       }
